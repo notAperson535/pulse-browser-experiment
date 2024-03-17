@@ -13,6 +13,33 @@ declare interface WindowConfiguration {
   initialUrl: string
 }
 
+declare type ViewableWritable<T> = {
+  readOnce(): T
+} & import('svelte/store').Writable<T>
+
+declare interface ITab {
+  tabId: number | undefined
+
+  title: ViewableWritable<string>
+  icon: ViewableWritable<string | null>
+  uri: ViewableWritable<nsIURIType>
+
+  hidden: ViewableWritable<boolean>
+
+  getTabId(): number
+  getWindowId(): number
+  getBrowserElement(): XULBrowserElement
+
+  useEventListeners(): void
+  removeEventListeners(): void
+
+  goBack(): void
+  goForward(): void
+  reload(): void
+
+  swapWithTab(tab: ITab): Promise<void>
+}
+
 declare type WindowApi = {
   /**
    * Identify which window this is. This should be used for actions like tab
@@ -34,13 +61,13 @@ declare type WindowApi = {
   }
 
   tabs: {
-    closeTab(tab: Tab): void
-    openTab(url?: nsIURIType): Tab
-    runOnCurrentTab<R>(callback: (tab: Tab) => R): R | undefined
-    setCurrentTab(tab: Tab): void
-    getCurrentTab(): Tab | undefined
-    getTabById(id: number): Tab | undefined
-    tabs: Tab[]
+    closeTab(tab: ITab): void
+    openTab(url?: nsIURIType): ITab
+    runOnCurrentTab<R>(callback: (tab: ITab) => R): R | undefined
+    setCurrentTab(tab: ITab): void
+    getCurrentTab(): ITab | undefined
+    getTabById(id: number): ITab | undefined
+    tabs: ITab[]
     setIcon(browser: XULBrowserElement, iconURL: string): void
   }
 

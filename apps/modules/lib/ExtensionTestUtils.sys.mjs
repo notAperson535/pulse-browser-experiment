@@ -174,10 +174,8 @@ const objectMap = (obj, fn) =>
  */
 class ExtensionTestUtilsImpl {
   /**
-   * @template {import('resource://app/modules/zora.sys.mjs').IAssert} A
-   *
    * @param {Partial<import("resource://app/modules/ExtensionTestUtils.sys.mjs").ExtManifest>} definition
-   * @param {import('resource://app/modules/ExtensionTestUtils.sys.mjs').AddonMiddleware<A>} assert
+   * @param {import('resource://app/modules/TestManager.sys.mjs').IDefaultAssert} assert
    *
    * @returns {import('resource://app/modules/ExtensionTestUtils.sys.mjs').ExtensionWrapper}
    */
@@ -189,8 +187,13 @@ class ExtensionTestUtilsImpl {
         definition.background && serializeScript(definition.background),
     })
 
+    let testCount = 0
+    /** @type {number | null} */
+    let expectedTestCount = null
+
     function handleTestResults(kind, pass, msg, ...args) {
       if (kind == 'test-eq') {
+        testCount += 1
         let [expected, actual] = args
         assert.ok(pass, `${msg} - Expected: ${expected}, Actual: ${actual}`)
       } else if (kind == 'test-log') {
@@ -228,25 +231,42 @@ class ExtensionTestUtilsImpl {
             /* Ignore */
           }
           await extension.startup()
-          return await startupPromise
+          await startupPromise
         } catch (e) {
           assert.fail(`Errored: ${e}`)
         }
+
+        return this
       },
       async unload() {
         await extension.shutdown()
-        return await extension._uninstallPromise
+        await extension._uninstallPromise
+
+        if (expectedTestCount && testCount !== expectedTestCount) {
+          assert.fail(
+            `Expected ${expectedTestCount} to execute. ${testCount} extecuted instead`,
+          )
+        }
       },
 
+      /**
+       * @param {number} count
+       */
+      testCount(count) {
+        expectedTestCount = count
+        return this
+      },
       sendMsg(msg) {
         extension.testMessage(msg)
+        return this
       },
       async awaitMsg(msg) {
+        const self = this
         return new Promise((res) => {
           const callback = (_, event) => {
             if (event == msg) {
               extension.off('test-message', callback)
-              res(void 0)
+              res(self)
             }
           }
 

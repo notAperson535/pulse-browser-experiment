@@ -6,7 +6,8 @@ import { App } from '@tinyhttp/app'
 import { type ExecaChildProcess, execa } from 'execa'
 import { createWriteStream } from 'node:fs'
 import { argv, exit } from 'node:process'
-import tapSpec from 'tap-spec'
+
+import { reporter } from './lib/tapReporter.js'
 
 // If you update this port, you should update the port in the test runner
 const TEST_PORT = 3948
@@ -51,7 +52,7 @@ function createTestReporter(
       .get('/config', (_, res) => void res.send({ shouldWatch }))
       .post('/results', (req, res) => {
         // Provide a nice reporter to the console
-        req.pipe(tapSpec()).pipe(process.stdout)
+        req.pipe(reporter(shouldWatch))
 
         if (testProcess) {
           req

@@ -19,11 +19,15 @@ declare module 'resource://app/modules/ExtensionTestUtils.sys.mjs' {
 
   export type ExtensionWrapper = {
     extension: Extension
-    startup(): Promise<[string, string]>
-    unload(): Promise<unknown>
+    startup(): Promise<ExtensionWrapper>
+    unload(): Promise<void>
 
-    sendMsg(msg: string): void
-    awaitMsg(msg: string): Promise<void>
+    /**
+     * Specifies the number of tests that that this extension should execute
+     */
+    testCount(count: number): ExtensionWrapper
+    sendMsg(msg: string): ExtensionWrapper
+    awaitMsg(msg: string): Promise<ExtensionWrapper>
   }
 
   /**

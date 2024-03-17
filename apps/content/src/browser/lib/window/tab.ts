@@ -22,7 +22,7 @@ let localTabId = 0
  * This provides a consistent internal representation of a tab, including the
  * browser elements it contains & information derived from listeners about its current state
  */
-export class Tab {
+export class Tab implements ITab {
   private _id: number = ++localTabId
   private tabId: number | undefined
 
@@ -31,7 +31,7 @@ export class Tab {
 
   // Publicly available data. Even though these are writable, updating them will not change
   // the state of the browser element
-  public title = writable('')
+  public title = viewableWritable('')
   public icon: ViewableWritable<string | null> = viewableWritable(null)
   public uri: ViewableWritable<nsIURIType>
   public bookmarkInfo: Writable<BookmarkTreeNode | null> = writable(null)
@@ -48,7 +48,7 @@ export class Tab {
   public zoom = writable(1)
 
   public focusedOmnibox = writable(true)
-  public hidden = writable(false)
+  public hidden = viewableWritable(false)
 
   constructor(uri: nsIURIType) {
     this.browserElement = createBrowser({
@@ -92,6 +92,10 @@ export class Tab {
    */
   public getTabId(): number {
     return this.tabId || 0
+  }
+
+  public getWindowId(): number {
+    return window.windowApi.id
   }
 
   public getBrowserElement() {
@@ -241,24 +245,25 @@ export class Tab {
     this.showFindBar()
   }
 
-  public swapWithTab(tab: Tab) {
+  public swapWithTab(tab: ITab) {
     this.removeEventListeners()
     tab.removeEventListeners()
 
-    this.browserElement.swapDocShells(tab.browserElement)
+    this.browserElement.swapDocShells(tab.getBrowserElement())
 
     this.useEventListeners()
     tab.useEventListeners()
 
     if (this.browserElement.id) this.tabId = this.browserElement.browserId
-    if (tab.browserElement.id) tab.tabId = tab.browserElement.browserId
+    if (tab.getBrowserElement().id)
+      tab.tabId = tab.getBrowserElement().browserId
 
-    const otherTitle = get(tab.title)
+    const otherTitle = tab.title.readOnce()
     const otherIcon = get(tab.icon)
     const otherUri = get(tab.uri)
     const otherBookmarkInfo = get(tab.bookmarkInfo)
 
-    tab.title.set(get(this.title))
+    tab.title.set(this.title.readOnce())
     tab.icon.set(get(this.icon))
     tab.uri.set(get(this.uri))
     tab.bookmarkInfo.set(get(this.bookmarkInfo))

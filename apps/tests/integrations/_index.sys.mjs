@@ -4,3 +4,4 @@
 // @ts-check
 /// <reference types="@browser/link" />
 import './extensions/pageAction.mjs'
+import './extensions/tabs.mjs'
