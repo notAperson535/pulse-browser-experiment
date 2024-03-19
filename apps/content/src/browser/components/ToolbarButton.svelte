@@ -21,5 +21,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
+    color: var(--theme-fg);
   }
 </style>

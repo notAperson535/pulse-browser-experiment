@@ -10,14 +10,22 @@ declare type WebsiteViewLocationChangeProperties = {
   id: number
 }
 
+declare type OklchTheme = {
+  hue: number
+  foreground: { lightness: number; chroma: number }
+  background: { lightness: number; chroma: number }
+}
+
 declare type WebsiteViewEvents = {
   loadingChange: boolean
   progressPercent: number
   locationChange: WebsiteViewLocationChangeProperties
+  themeChange: OklchTheme
 }
 
 declare type WebsiteView = {
   windowBrowserId: number
+  theme?: OklchTheme
 
   browser: XULBrowserElement
   browserId?: number

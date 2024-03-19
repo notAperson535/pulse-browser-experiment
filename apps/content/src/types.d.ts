@@ -8,6 +8,8 @@
 /// <reference path='./contentAreaUtils' />
 /// <reference path='./globalOverlay' />
 
+/// <reference path='./browser/windowApi/eventBus.d.ts' />
+
 declare module '*.txt' {
   const contents: string
   export = contents

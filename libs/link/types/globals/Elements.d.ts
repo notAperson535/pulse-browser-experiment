@@ -18,12 +18,26 @@ declare type DOMLinkAddedEvent = Event & {
   target: HTMLLinkElement
   type: 'DOMLinkAdded'
 }
+declare type DOMMetaAddedEvent = Event & {
+  target: HTMLMetaElement
+  type: 'DOMMetaAdded'
+}
+declare type DOMMetaChangedEvent = Event & {
+  target: HTMLMetaElement
+  type: 'DOMMetaChanged'
+}
 declare type DOMHeadParsedEvent = Event & {
   target: HTMLHeadElement
   type: 'DOMHeadElementParsed'
 }
-declare type PageShowEvent = PageTransitionEvent & { type: 'pageshow' }
-declare type PageHideEvent = PageTransitionEvent & { type: 'pagehide' }
+declare type PageShowEvent = PageTransitionEvent & {
+  type: 'pageshow'
+  target: Document
+}
+declare type PageHideEvent = PageTransitionEvent & {
+  type: 'pagehide'
+  target: Document
+}
 
 declare interface LoadURIOptions {
   triggeringPrincipal?: Principal
@@ -52,7 +66,7 @@ declare interface XULBrowserElement extends HTMLElement {
   goForward()
   reload()
   fullZoom: number
-  browsingContext?: unknown & { currentURI: nsIURIType }
+  browsingContext?: unknown & {}
   loadURI(uri: nsIURIType, params?: LoadURIOptions)
   browserId: number
   mInitialized: boolean

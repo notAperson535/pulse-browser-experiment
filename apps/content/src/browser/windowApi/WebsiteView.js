@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 // @ts-check
 /// <reference types="@browser/link" />
 /// <reference types="gecko-types" />
@@ -74,10 +73,15 @@ export function create(uri) {
   }
 
   goTo(view, uri)
+
   queueMicrotask(async () => {
     await initialized(view)
-    view.windowBrowserId = view.browser.browserId
+    view.browserId = view.browser.browserId
     registerListeners(view)
+  })
+  queueMicrotask(async () => {
+    const { registerViewThemeListener } = await import('./WebsiteTheme.js')
+    registerViewThemeListener(view)
   })
 
   return view
@@ -89,6 +93,13 @@ export function create(uri) {
 function initialized(view) {
   view.browser.docShell
   return spinlock(() => view.browser.mInitialized)
+}
+
+/**
+ * @todo
+ */
+function cleanup() {
+  // TODO: Cleanup listeners created in WebsiteTheme.js
 }
 
 /**

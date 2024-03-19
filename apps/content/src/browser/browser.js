@@ -4,5 +4,8 @@
 // @ts-check
 import BrowserWindow from './BrowserWindow.svelte'
 import './browser.css'
+import { registerEventBus } from './windowApi/eventBus.js'
+
+registerEventBus()
 
 new BrowserWindow({ target: document.body })

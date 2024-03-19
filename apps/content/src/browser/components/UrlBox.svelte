@@ -36,26 +36,22 @@
 </script>
 
 <div class="url-box">
-  <div class="background"></div>
+  <input
+    type="text"
+    bind:this={input}
+    bind:value={$value}
+    on:focus={() => (inputFocused = true)}
+    on:blur={() => (inputFocused = false)}
+  />
 
-  <div class="container" data-active={inputFocused}>
-    <input
-      type="text"
-      bind:this={input}
-      bind:value={$value}
-      on:focus={() => (inputFocused = true)}
-      on:blur={() => (inputFocused = false)}
-    />
-
-    <div hidden={!inputFocused} class="completions">
-      {#each fastAutocomplete as result}
-        <div class="completion">{result.display}</div>
-      {/each}
-      <div>Suggestions</div>
-      {#each $slowAutocomplete as result}
-        <div class="completion">{result.display}</div>
-      {/each}
-    </div>
+  <div hidden={!inputFocused} class="completions">
+    {#each fastAutocomplete as result}
+      <div class="completion">{result.display}</div>
+    {/each}
+    <div>Suggestions</div>
+    {#each $slowAutocomplete as result}
+      <div class="completion">{result.display}</div>
+    {/each}
   </div>
 </div>
 
@@ -69,29 +65,12 @@
     outline: solid;
   }
 
+  input {
+    color: var(--theme-fg);
+  }
+
   input:focus {
     outline: none;
-  }
-
-  .background {
-    background: black;
-    height: 2.5rem;
-    border-radius: 1rem;
-  }
-
-  .container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-
-    box-sizing: content-box;
-    border-radius: 1rem;
-  }
-
-  .container[data-active='true'] {
-    background: black;
-    border: 1px solid red;
   }
 
   .url-box input {
@@ -105,7 +84,14 @@
   }
 
   .completions {
+    position: absolute;
+    top: 2.5rem;
+    width: 100%;
+
     padding: 0.5rem;
+    padding-top: 0;
+    background: black;
+    border-radius: 1rem;
   }
 
   .completion {

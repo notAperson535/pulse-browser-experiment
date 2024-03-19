@@ -3,10 +3,7 @@
   "compilerOptions": {
     "target": "es2022",
     "allowArbitraryExtensions": true,
-    "paths": {
-      "@shared/*": ["./src/shared/*"],
-      "@browser/*": ["./src/browser/*"]
-    },
+    "paths": {},
     "skipLibCheck": true
   },
   "include": ["src/**/*"],

@@ -4,6 +4,8 @@
 
 <script>
   // @ts-check
+    import { readable } from 'svelte/store'
+  
   import WebsiteView from './components/WebsiteView.svelte'
   import * as WebsiteViewApi from './windowApi/WebsiteView.js'
   import { browserImports } from './browserImports.js'
@@ -15,13 +17,39 @@
   })
 
   const view = WebsiteViewApi.create(
-    browserImports.NetUtil.newURI('https://google.com'),
+   browserImports.NetUtil.newURI('https://google.com'),
   )
+
+  // TODO: Move this code somewhere closer to websiteview
+  const theme = readable(view.theme, set => {
+    view.events.on('themeChange', set)
+    return () => view.events.off('themeChange', set)
+  })
+
+  $: console.log($theme)
 </script>
 
+<div class="container" style={$theme && `--theme-fg: oklch(${$theme.foreground.lightness}% ${$theme.foreground.chroma} ${$theme.hue});--theme-bg: oklch(${$theme.background.lightness}% ${$theme.foreground.chroma} ${$theme.hue})`}>
 <button on:click={() => lazy.BrowserToolboxLauncher.init()}
   >Open devtools</button
 >
 <button on:click={() => window.location.reload()}>Reload</button>
 
 <WebsiteView {view} />
+</div>
+
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    background-color: var(--theme-bg);
+    color: var(--theme-fg);
+
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+</style>
+

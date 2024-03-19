@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 /// @ts-check
 /// <reference types="@browser/link" />
 import { lazyESModuleGetters } from 'resource://app/modules/TypedImportUtils.sys.mjs'
@@ -54,6 +53,21 @@ const JS_WINDOW_ACTORS = {
         // The `pagehide` event is only used to clean up state which will not be
         // present if the actor hasn't been created.
         pagehide: { createActor: false },
+      },
+    },
+    messageManagerGroups: ['browsers'],
+  },
+
+  ThemeMeta: {
+    parent: {
+      esModuleURI: 'resource://app/actors/ThemeMetaParent.sys.mjs',
+    },
+    child: {
+      esModuleURI: 'resource://app/actors/ThemeMetaChild.sys.mjs',
+      events: {
+        DOMMetaAdded: {},
+        DOMMetaChanged: {},
+        pageshow: {},
       },
     },
     messageManagerGroups: ['browsers'],
