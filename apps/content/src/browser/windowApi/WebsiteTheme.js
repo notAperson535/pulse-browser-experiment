@@ -30,30 +30,34 @@ export function applyTheme(view, theme) {
     return
   }
 
-  const colorObject = new Color(themeColor)
-  const hue = colorObject.oklch[2]
+  try {
+    const colorObject = new Color(themeColor)
+    const hue = colorObject.oklch[2]
 
-  let lightness = colorObject.oklch[0] * 100
-  let chroma = colorObject.oklch[1]
+    let lightness = colorObject.oklch[0] * 100
+    let chroma = colorObject.oklch[1]
 
-  const isLight = lightness > 50
-  const withinSpec = isLight ? lightness >= 75 : lightness <= 25
+    const isLight = lightness > 50
+    const withinSpec = isLight ? lightness >= 75 : lightness <= 25
 
-  if (!withinSpec) {
-    lightness = isLight ? 75 : 25
-    chroma = isLight ? 0.12 : 0.04
+    if (!withinSpec) {
+      lightness = isLight ? 75 : 25
+      chroma = isLight ? 0.12 : 0.04
+    }
+
+    const activeLightness = lightness + (isLight ? -5 : 5)
+    const foregroundLightness = isLight ? 10 : 90
+
+    const background = { lightness, chroma }
+    const active = { lightness: activeLightness, chroma }
+    const foreground = {
+      lightness: foregroundLightness,
+      chroma,
+    }
+
+    view.theme = { hue, background, foreground, active }
+    view.events.emit('themeChange', view.theme)
+  } catch (e) {
+    console.warn('Theme generation failed', e)
   }
-
-  const activeLightness = lightness + (isLight ? -5 : 5)
-  const foregroundLightness = isLight ? 10 : 90
-
-  const background = { lightness, chroma }
-  const active = { lightness: activeLightness, chroma }
-  const foreground = {
-    lightness: foregroundLightness,
-    chroma,
-  }
-
-  view.theme = { hue, background, foreground, active }
-  view.events.emit('themeChange', view.theme)
 }

@@ -109,9 +109,15 @@ export function performCursedUrlStyling(inputElement) {
       const range = document.createRange()
       range.setStart(textNode, startIndex)
       range.setEnd(textNode, currentIndex)
+      secondary.addRange(range)
 
-      const selection = isHttp ? strikeOut : secondary
-      selection.addRange(range)
+      if (isHttp) {
+        const range = document.createRange()
+        range.setStart(textNode, startIndex)
+        range.setEnd(textNode, currentIndex - 3)
+        strikeOut.addRange(range)
+      }
+
       startIndex = currentIndex
     }
 

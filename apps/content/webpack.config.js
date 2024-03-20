@@ -2,13 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 // @ts-check
-import { preprocessMeltUI } from '@melt-ui/pp'
 import CopyWebpackPlugin from 'copy-webpack-plugin'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { join, resolve } from 'node:path'
 import preprocess from 'svelte-preprocess'
-import sequence from 'svelte-sequential-preprocessor'
 import WebpackLicensePlugin from 'webpack-license-plugin'
 
 const HTML_TEMPLATE_FILE = './src/index.html'
@@ -110,7 +108,7 @@ const sharedSettings = (contentFiles, dev) => {
               },
               emitCss: !dev,
               hotReload: dev,
-              preprocess: sequence([preprocess(), preprocessMeltUI()]),
+              preprocess: preprocess(),
             },
           },
         },

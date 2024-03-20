@@ -9,7 +9,7 @@
   import { browserImports } from '../browserImports.js'
   import * as WebsiteViewApi from '../windowApi/WebsiteView.js'
   import * as UrlBoxApi from './urlBox.js'
-  import { onMount } from 'svelte'
+  import { hasContext, onMount } from 'svelte'
 
   /** @type {WebsiteView} */
   export let view
@@ -34,6 +34,7 @@
 
   $: fastAutocomplete = UrlBoxApi.getFastAutocomplete($userValue)
   $: slowAutocomplete = UrlBoxApi.debouncedSlowAutocomplete(userValue)
+  $: hasAutocomplete = fastAutocomplete.length != 0 && $slowAutocomplete.length != 0
 
   $: {
     if (
@@ -47,7 +48,7 @@
       activeIndex = fastAutocomplete.length + $slowAutocomplete.length - 1
     }
 
-    if (fastAutocomplete.length != 0 && $slowAutocomplete.length != 0) {
+    if (hasAutocomplete) {
       const completion =
         fastAutocomplete[activeIndex] ||
         $slowAutocomplete[activeIndex - fastAutocomplete.length]
@@ -66,6 +67,7 @@
 
   onMount(() => {
     uri.subscribe((uri) => (input.value = uri?.spec || ''))
+    uri.subscribe((uri) => value.set(uri?.spec || ''))
     uri.subscribe(UrlBoxApi.performCursedUrlStyling(input))
   })
 </script>
@@ -110,7 +112,7 @@
   />
 
   <div
-    hidden={!inputFocused}
+    hidden={!(inputFocused && hasAutocomplete)}
     class="completions"
     role="listbox"
     tabindex="0"

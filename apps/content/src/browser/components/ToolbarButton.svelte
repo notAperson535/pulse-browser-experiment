@@ -26,7 +26,11 @@
     color: var(--theme-fg);
   }
 
-  button:hover {
+  button:not(:disabled):hover {
     background-color: var(--theme-active);
+  }
+
+  button:disabled :global(svg) {
+    opacity: 0.5;
   }
 </style>

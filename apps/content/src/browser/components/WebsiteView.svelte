@@ -14,6 +14,7 @@
   import ToolbarButton from './ToolbarButton.svelte'
   import ToolbarSpacer from './ToolbarSpacer.svelte'
   import UrlBox from './UrlBox.svelte'
+  import HamburgurMenu from './HamburgurMenu.svelte'
 
   /** @type {WebsiteView} */
   export let view
@@ -53,6 +54,8 @@
   <UrlBox {view} />
 
   <ToolbarSpacer />
+
+  <HamburgurMenu />
 </div>
 
 <div bind:this={browserContainer} class="browserContainer"></div>
@@ -61,6 +64,7 @@
   .toolbar {
     display: flex;
     align-items: center;
+    padding: 0.25rem;
   }
 
   .browserContainer {

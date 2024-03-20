@@ -12,7 +12,6 @@
   "license": "ISC",
   "devDependencies": {
     "@browser/link": "workspace:*",
-    "@melt-ui/pp": "^0.3.0",
     "@total-typescript/ts-reset": "^0.5.1",
     "@tsconfig/svelte": "^5.0.2",
     "copy-webpack-plugin": "^11.0.0",
@@ -35,7 +34,6 @@
   },
   "dependencies": {
     "@catppuccin/palette": "^1.0.1",
-    "@melt-ui/svelte": "^0.76.0",
     "colorjs.io": "^0.5.0",
     "fnts": "^2.1.0",
     "mitt": "^3.0.1",
