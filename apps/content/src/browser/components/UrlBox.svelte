@@ -6,8 +6,9 @@
   // @ts-check
   import { writable } from 'svelte/store'
 
-  import * as WebsiteViewApi from '../windowApi/WebsiteView'
-  import * as UrlBoxApi from './urlBox'
+  import { browserImports } from '../browserImports.js'
+  import * as WebsiteViewApi from '../windowApi/WebsiteView.js'
+  import * as UrlBoxApi from './urlBox.js'
   import { onMount } from 'svelte'
 
   /** @type {WebsiteView} */
@@ -23,14 +24,48 @@
 
   /** @type {HTMLInputElement} */
   let input
+  let activeIndex = 0
+  /**
+   * Represents the value that the _user_ has typed into the url bar. Not the value that is
+   * set by other programs
+   */
+  const userValue = writable('')
   const value = writable('')
 
-  uri.subscribe((newValue) => value.set(newValue?.spec || ''))
+  $: fastAutocomplete = UrlBoxApi.getFastAutocomplete($userValue)
+  $: slowAutocomplete = UrlBoxApi.debouncedSlowAutocomplete(userValue)
 
-  $: fastAutocomplete = UrlBoxApi.getFastAutocomplete($value)
-  $: slowAutocomplete = UrlBoxApi.debouncedSlowAutocomplete(value)
+  $: {
+    if (
+      activeIndex != 0 &&
+      activeIndex >= fastAutocomplete.length + $slowAutocomplete.length
+    ) {
+      activeIndex = 0
+    }
+
+    if (activeIndex < 0) {
+      activeIndex = fastAutocomplete.length + $slowAutocomplete.length - 1
+    }
+
+    if (fastAutocomplete.length != 0 && $slowAutocomplete.length != 0) {
+      const completion =
+        fastAutocomplete[activeIndex] ||
+        $slowAutocomplete[activeIndex - fastAutocomplete.length]
+      value.set(activeIndex === 0 ? $userValue : completion.url)
+    }
+  }
+
+  /**
+   * @param {UrlBoxApi.AutocompleteResult} completion
+   */
+  function selectCompletion(completion) {
+    input?.blur()
+    value.set(completion.url)
+    WebsiteViewApi.goTo(view, browserImports.NetUtil.newURI(completion.url))
+  }
 
   onMount(() => {
+    uri.subscribe((uri) => (input.value = uri?.spec || ''))
     uri.subscribe(UrlBoxApi.performCursedUrlStyling(input))
   })
 </script>
@@ -42,15 +77,73 @@
     bind:value={$value}
     on:focus={() => (inputFocused = true)}
     on:blur={() => (inputFocused = false)}
+    on:input={() => userValue.set(input.value)}
+    on:keydown={(e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        return (activeIndex += 1)
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        return (activeIndex -= 1)
+      }
+      if (e.key === 'Home') {
+        e.preventDefault()
+        return (activeIndex = 0)
+      }
+      if (e.key === 'End') {
+        e.preventDefault()
+        return (activeIndex =
+          fastAutocomplete.length + $slowAutocomplete.length - 1)
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        selectCompletion(
+          fastAutocomplete[activeIndex] ||
+            $slowAutocomplete[activeIndex - fastAutocomplete.length],
+        )
+        return
+      }
+    }}
+    aria-autocomplete="list"
+    aria-controls="completions"
   />
 
-  <div hidden={!inputFocused} class="completions">
-    {#each fastAutocomplete as result}
-      <div class="completion">{result.display}</div>
+  <div
+    hidden={!inputFocused}
+    class="completions"
+    role="listbox"
+    tabindex="0"
+    aria-activedescendant={`completion-${activeIndex}`}
+  >
+    {#each fastAutocomplete as result, index}
+      <div
+        class="completion"
+        id={`completion-${index}`}
+        role="option"
+        tabindex="-1"
+        aria-selected={activeIndex === index}
+      >
+        {result.display}
+      </div>
     {/each}
+
+    {#if $slowAutocomplete.length != 0}
     <div>Suggestions</div>
-    {#each $slowAutocomplete as result}
-      <div class="completion">{result.display}</div>
+    {/if}
+
+    {#each $slowAutocomplete as result, index}
+      {@const itemIndex = index + fastAutocomplete.length}
+
+      <div
+        class="completion"
+        id={`completion-${itemIndex}`}
+        role="option"
+        tabindex="-1"
+        aria-selected={activeIndex === itemIndex}
+      >
+        {result.display}
+      </div>
     {/each}
   </div>
 </div>
@@ -59,6 +152,9 @@
   .url-box {
     flex-grow: 2;
     position: relative;
+
+    border: 0.25rem solid var(--theme-active);
+    border-radius: 1rem;
   }
 
   .url-box:has(+ .container > input:focus) {
@@ -85,20 +181,23 @@
 
   .completions {
     position: absolute;
-    top: 2.5rem;
+    top: 3rem;
     width: 100%;
-
+    
     padding: 0.5rem;
     padding-top: 0;
-    background: black;
+    background: var(--theme-bg);
     border-radius: 1rem;
+    border: 0.25rem solid var(--theme-active);
   }
 
   .completion {
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     margin-top: 0.5rem;
+  }
 
-    background: darkgray;
+  .completion[aria-selected='true'] {
+    background-color: var(--theme-active);
   }
 </style>

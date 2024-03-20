@@ -17,11 +17,16 @@
 
     width: 2.5rem;
     height: 2.5rem;
+    border-radius: 0.5rem;
 
     display: flex;
     justify-content: center;
     align-items: center;
 
     color: var(--theme-fg);
+  }
+
+  button:hover {
+    background-color: var(--theme-active);
   }
 </style>

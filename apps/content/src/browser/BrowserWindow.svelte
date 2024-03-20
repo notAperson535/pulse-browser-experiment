@@ -4,8 +4,8 @@
 
 <script>
   // @ts-check
-    import { readable } from 'svelte/store'
-  
+  import { readable } from 'svelte/store'
+
   import WebsiteView from './components/WebsiteView.svelte'
   import * as WebsiteViewApi from './windowApi/WebsiteView.js'
   import { browserImports } from './browserImports.js'
@@ -17,25 +17,47 @@
   })
 
   const view = WebsiteViewApi.create(
-   browserImports.NetUtil.newURI('https://google.com'),
+    browserImports.NetUtil.newURI('https://google.com'),
   )
 
   // TODO: Move this code somewhere closer to websiteview
-  const theme = readable(view.theme, set => {
+  const theme = readable(view.theme, (set) => {
     view.events.on('themeChange', set)
     return () => view.events.off('themeChange', set)
   })
 
-  $: console.log($theme)
+  $: hue = $theme?.hue
+  $: bg = $theme?.background
+  $: fg = $theme?.foreground
+  $: active = $theme?.active
+
+  /**
+   * @param {number} hue
+   * @param {OklchThemeVariant} rest
+   * @returns {string}
+   */
+  function renderThemeVariable(hue, rest) {
+    return `oklch(${rest.lightness}% ${rest.chroma} ${hue})`
+  }
 </script>
 
-<div class="container" style={$theme && `--theme-fg: oklch(${$theme.foreground.lightness}% ${$theme.foreground.chroma} ${$theme.hue});--theme-bg: oklch(${$theme.background.lightness}% ${$theme.foreground.chroma} ${$theme.hue})`}>
-<button on:click={() => lazy.BrowserToolboxLauncher.init()}
-  >Open devtools</button
+<div
+  class="container"
+  style={$theme &&
+    `--theme-fg: ${renderThemeVariable(
+      hue,
+      fg,
+    )};--theme-bg: ${renderThemeVariable(
+      hue,
+      bg,
+    )};--theme-active: ${renderThemeVariable(hue, active)};`}
 >
-<button on:click={() => window.location.reload()}>Reload</button>
+  <button on:click={() => lazy.BrowserToolboxLauncher.init()}
+    >Open devtools</button
+  >
+  <button on:click={() => window.location.reload()}>Reload</button>
 
-<WebsiteView {view} />
+  <WebsiteView {view} />
 </div>
 
 <style>
@@ -52,4 +74,3 @@
       color 0.2s;
   }
 </style>
-

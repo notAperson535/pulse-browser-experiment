@@ -156,6 +156,12 @@ async function duckduckgoAutocomplete(input) {
   )
   const /** @type {[string, string[]]} */ json = await response.json()
   const completions = json[1]
+
+  if (!completions) {
+    console.warn('DuckDuckGo completions did not return correctly', json)
+    return []
+  }
+
   return completions
     .filter((comp) => comp != input)
     .map((comp) => ({

@@ -98,9 +98,9 @@ function initialized(view) {
 /**
  * @todo
  */
-function cleanup() {
-  // TODO: Cleanup listeners created in WebsiteTheme.js
-}
+//function cleanup() {
+// TODO: Cleanup listeners created in WebsiteTheme.js
+//}
 
 /**
  * @param {WebsiteView} view
