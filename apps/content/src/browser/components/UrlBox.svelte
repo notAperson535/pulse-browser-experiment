@@ -66,8 +66,8 @@
   }
 
   onMount(() => {
-    uri.subscribe((uri) => (input.value = uri?.spec || ''))
-    uri.subscribe((uri) => value.set(uri?.spec || ''))
+    uri.subscribe((uri) => decodeURI(input.value = uri?.spec || ''))
+    uri.subscribe((uri) => value.set(decodeURI(uri?.spec || '')))
     uri.subscribe(UrlBoxApi.performCursedUrlStyling(input))
   })
 </script>

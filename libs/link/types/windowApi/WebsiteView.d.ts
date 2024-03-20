@@ -10,10 +10,13 @@ declare type WebsiteViewLocationChangeProperties = {
   id: number
 }
 
+declare type OklchThemeVariant = { lightness: number; chroma: number }
+
 declare type OklchTheme = {
   hue: number
-  foreground: { lightness: number; chroma: number }
-  background: { lightness: number; chroma: number }
+  foreground: OklchThemeVariant
+  background: OklchThemeVariant
+  active: OklchThemeVariant
 }
 
 declare type WebsiteViewEvents = {
