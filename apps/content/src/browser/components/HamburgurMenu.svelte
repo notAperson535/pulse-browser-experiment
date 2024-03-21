@@ -1,8 +1,12 @@
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
 <script>
   // @ts-check
 
-  import RiMenuLine from "svelte-remixicon/RiMenuLine.svelte";
-  import ToolbarButton from "./ToolbarButton.svelte"
+  import RiMenuLine from 'svelte-remixicon/RiMenuLine.svelte'
+  import ToolbarButton from './ToolbarButton.svelte'
 
   const lazy = {}
   ChromeUtils.defineESModuleGetters(lazy, {
@@ -15,19 +19,21 @@
   /**
    * @param {*} a
    */
-  const close = (a) => { dropdownVisible = false }
+  const close = (a) => {
+    dropdownVisible = false
+  }
 </script>
 
 <div class="container">
-  <ToolbarButton on:click={() => dropdownVisible = !dropdownVisible}>
+  <ToolbarButton on:click={() => (dropdownVisible = !dropdownVisible)}>
     <RiMenuLine />
   </ToolbarButton>
 
   <div class="dropdown" hidden={!dropdownVisible}>
-  <button on:click={() => close(lazy.BrowserToolboxLauncher.init())}
-    >Open devtools</button
-  >
-  <button on:click={() => close(window.location.reload())}>Reload</button>
+    <button on:click={() => close(lazy.BrowserToolboxLauncher.init())}
+      >Open devtools</button
+    >
+    <button on:click={() => close(window.location.reload())}>Reload</button>
   </div>
 </div>
 
@@ -36,7 +42,7 @@
     position: relative;
   }
 
-.dropdown[hidden=""] {
+  .dropdown[hidden=''] {
     display: none;
   }
 
@@ -61,12 +67,10 @@
     padding: 0.5rem 1rem;
     border: none;
     background: none;
+    color: var(--theme-fg);
   }
 
   button:hover {
     background-color: var(--theme-active);
   }
 </style>
-
-
-

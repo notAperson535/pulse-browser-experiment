@@ -34,7 +34,8 @@
 
   $: fastAutocomplete = UrlBoxApi.getFastAutocomplete($userValue)
   $: slowAutocomplete = UrlBoxApi.debouncedSlowAutocomplete(userValue)
-  $: hasAutocomplete = fastAutocomplete.length != 0 && $slowAutocomplete.length != 0
+  $: hasAutocomplete =
+    fastAutocomplete.length != 0 && $slowAutocomplete.length != 0
 
   $: {
     if (
@@ -66,7 +67,7 @@
   }
 
   onMount(() => {
-    uri.subscribe((uri) => decodeURI(input.value = uri?.spec || ''))
+    uri.subscribe((uri) => decodeURI((input.value = uri?.spec || '')))
     uri.subscribe((uri) => value.set(decodeURI(uri?.spec || '')))
     uri.subscribe(UrlBoxApi.performCursedUrlStyling(input))
   })
@@ -131,7 +132,7 @@
     {/each}
 
     {#if $slowAutocomplete.length != 0}
-    <div>Suggestions</div>
+      <div>Suggestions</div>
     {/if}
 
     {#each $slowAutocomplete as result, index}
@@ -185,7 +186,7 @@
     position: absolute;
     top: 3rem;
     width: 100%;
-    
+
     padding: 0.5rem;
     padding-top: 0;
     background: var(--theme-bg);

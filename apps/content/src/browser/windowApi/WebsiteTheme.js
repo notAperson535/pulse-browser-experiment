@@ -32,17 +32,25 @@ export function applyTheme(view, theme) {
 
   try {
     const colorObject = new Color(themeColor)
-    const hue = colorObject.oklch[2]
-
+    let hue = colorObject.oklch[2]
     let lightness = colorObject.oklch[0] * 100
     let chroma = colorObject.oklch[1]
+
+    if (Number.isNaN(hue)) {
+      hue = 0
+      chroma = 0
+    }
 
     const isLight = lightness > 50
     const withinSpec = isLight ? lightness >= 75 : lightness <= 25
 
     if (!withinSpec) {
       lightness = isLight ? 75 : 25
-      chroma = isLight ? 0.12 : 0.04
+      if (chroma === 0) {
+        chroma = 0
+      } else {
+        chroma = isLight ? 0.12 : 0.04
+      }
     }
 
     const activeLightness = lightness + (isLight ? -5 : 5)

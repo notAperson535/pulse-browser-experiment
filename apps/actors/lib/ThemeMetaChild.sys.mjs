@@ -34,11 +34,42 @@ export class ThemeMetaChild extends JSWindowActorChild {
    */
   handlePageLoad(event) {
     const document = event.target
-    this.currentColorOptions.body = this.contentWindow.getComputedStyle(
-      document.body,
-    ).background
+    this.currentColorOptions.body =
+      this.getHeaderColor(document.body) || undefined
 
     this.sendUpdatedThemeColors()
+  }
+
+  /**
+   * @param {HTMLElement} element
+   * @returns {string | null}
+   */
+  getHeaderColor(element) {
+    if (!element.getBoundingClientRect) {
+      return null
+    }
+
+    if (element.getBoundingClientRect().y != 0) {
+      return null
+    }
+
+    let elementColor = null
+
+    if (element.firstChild) {
+      elementColor = this.getHeaderColor(element.firstChild)
+    }
+
+    if (!elementColor) {
+      elementColor = this.contentWindow.getComputedStyle(element).background
+      if (
+        elementColor.toLowerCase() == 'none' ||
+        elementColor.toLowerCase() == 'transperent'
+      ) {
+        return null
+      }
+    }
+
+    return elementColor
   }
 
   sendUpdatedThemeColors() {
