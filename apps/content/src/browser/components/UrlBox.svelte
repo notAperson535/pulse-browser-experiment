@@ -9,7 +9,7 @@
   import { browserImports } from '../browserImports.js'
   import * as WebsiteViewApi from '../windowApi/WebsiteView.js'
   import * as UrlBoxApi from './urlBox.js'
-  import { hasContext, onMount } from 'svelte'
+  import { onMount } from 'svelte'
 
   /** @type {WebsiteView} */
   export let view
@@ -155,6 +155,7 @@
   .url-box {
     flex-grow: 2;
     position: relative;
+    height: 2.5rem;
 
     border: 0.25rem solid var(--theme-active);
     border-radius: 1rem;
@@ -174,7 +175,7 @@
 
   .url-box input {
     width: 100%;
-    height: 2.5rem;
+    height: 100%;
 
     border: none;
     background: none;

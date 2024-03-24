@@ -11,6 +11,7 @@
   import RiArrowRightLine from 'svelte-remixicon/RiArrowRightLine.svelte'
 
   import * as WebsiteViewApi from '../windowApi/WebsiteView'
+  import { activeTabId } from '../windowApi/WindowTabs'
   import ToolbarButton from './ToolbarButton.svelte'
   import ToolbarSpacer from './ToolbarSpacer.svelte'
   import UrlBox from './UrlBox.svelte'
@@ -35,32 +36,47 @@
   onMount(() => browserContainer.append(view.browser))
 </script>
 
-<div class="toolbar">
-  <ToolbarButton on:click={() => view.browser.goBack()} disabled={!$canGoBack}>
-    <RiArrowLeftLine />
-  </ToolbarButton>
-  <ToolbarButton on:click={() => view.browser.reload()}>
-    <RiRefreshLine />
-  </ToolbarButton>
-  <ToolbarButton
-    on:click={() => view.browser.goForward()}
-    disabled={!$canGoForward}
-  >
-    <RiArrowRightLine />
-  </ToolbarButton>
+<div class="website-view" id={`website-view-${view.windowBrowserId}`} hidden={$activeTabId !== view.windowBrowserId}>
+  <div class="toolbar">
+    <ToolbarButton
+      on:click={() => view.browser.goBack()}
+      disabled={!$canGoBack}
+    >
+      <RiArrowLeftLine />
+    </ToolbarButton>
+    <ToolbarButton on:click={() => view.browser.reload()}>
+      <RiRefreshLine />
+    </ToolbarButton>
+    <ToolbarButton
+      on:click={() => view.browser.goForward()}
+      disabled={!$canGoForward}
+    >
+      <RiArrowRightLine />
+    </ToolbarButton>
 
-  <ToolbarSpacer />
+    <ToolbarSpacer />
 
-  <UrlBox {view} />
+    <UrlBox {view} />
 
-  <ToolbarSpacer />
+    <ToolbarSpacer />
 
-  <HamburgurMenu />
+    <HamburgurMenu />
+  </div>
+
+  <div bind:this={browserContainer} class="browserContainer"></div>
 </div>
 
-<div bind:this={browserContainer} class="browserContainer"></div>
-
 <style>
+  [hidden=""] {
+    display: none !important;
+  }
+
+  .website-view {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
   .toolbar {
     display: flex;
     align-items: center;

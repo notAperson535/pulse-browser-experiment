@@ -72,15 +72,20 @@ function slowAutocomplete(input) {
  * @param {HTMLInputElement} inputElement
  */
 export function performCursedUrlStyling(inputElement) {
-  // @ts-expect-error - shenanagans !== type checking :(
-  const /** @type {nsIEditorType} */ editor = inputElement.editor
-  const /** @type {nsISelectionControllerType} */ controller =
-      editor.selectionController
-
   /**
    * Manual currying!
    */
   return () => {
+    // @ts-expect-error - shenanagans !== type checking :(
+    const /** @type {nsIEditorType} */ editor = inputElement.editor
+    const /** @type {nsISelectionControllerType} */ controller =
+        editor?.selectionController
+
+    if (!editor || !controller) {
+      console.debug('Editor and selection controller not available :(')
+      return
+    }
+
     const textNode = editor.rootElement.firstChild
     let startIndex = 0,
       currentIndex = 0
