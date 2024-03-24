@@ -36,7 +36,11 @@
   onMount(() => browserContainer.append(view.browser))
 </script>
 
-<div class="website-view" id={`website-view-${view.windowBrowserId}`} hidden={$activeTabId !== view.windowBrowserId}>
+<div
+  class="website-view"
+  id={`website-view-${view.windowBrowserId}`}
+  hidden={$activeTabId !== view.windowBrowserId}
+>
   <div class="toolbar">
     <ToolbarButton
       on:click={() => view.browser.goBack()}
@@ -67,7 +71,7 @@
 </div>
 
 <style>
-  [hidden=""] {
+  [hidden=''] {
     display: none !important;
   }
 

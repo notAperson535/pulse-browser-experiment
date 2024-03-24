@@ -35,28 +35,29 @@ export class ThemeMetaChild extends JSWindowActorChild {
   handlePageLoad(event) {
     const document = event.target
     this.currentColorOptions.body =
-      this.getHeaderColor(document.body) || undefined
+      this.getHeaderColor(document.body, document.body) || undefined
 
     this.sendUpdatedThemeColors()
   }
 
   /**
    * @param {HTMLElement} element
+   * @param {HTMLElement} body
    * @returns {string | null}
    */
-  getHeaderColor(element) {
+  getHeaderColor(element, body) {
     if (!element.getBoundingClientRect) {
       return null
     }
 
-    if (element.getBoundingClientRect().y != 0) {
+    if (element != body && element.getBoundingClientRect().y != 0) {
       return null
     }
 
     let elementColor = null
 
     if (element.firstChild) {
-      elementColor = this.getHeaderColor(element.firstChild)
+      elementColor = this.getHeaderColor(element.firstChild, body)
     }
 
     if (!elementColor) {

@@ -8,15 +8,17 @@
 
   import WebsiteView from './components/WebsiteView.svelte'
   import Tabs from './components/Tabs.svelte'
-  import {windowTabs, activeTab} from './windowApi/WindowTabs.js'
+  import { windowTabs, activeTab } from './windowApi/WindowTabs.js'
 
   const theme = derived(activeTab, ($activeTab, set) => {
     set($activeTab.view.theme)
     $activeTab.view.events.on('themeChange', set)
     return () => $activeTab.view.events.off('themeChange', set)
   })
-  
-  $: tabs = $windowTabs.toSorted((a, b) => a.view.windowBrowserId - b.view.windowBrowserId)
+
+  $: tabs = $windowTabs.toSorted(
+    (a, b) => a.view.windowBrowserId - b.view.windowBrowserId,
+  )
 
   $: hue = $theme?.hue
   $: bg = $theme?.background
