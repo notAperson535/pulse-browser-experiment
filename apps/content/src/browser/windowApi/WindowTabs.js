@@ -1,4 +1,6 @@
 // @ts-check
+import { derived } from 'svelte/store'
+
 import { browserImports } from '../browserImports.js'
 import { viewableWritable } from '../utils/readableWritable.js'
 import * as WebsiteViewApi from './WebsiteView.js'
@@ -22,5 +24,11 @@ export const windowTabs = viewableWritable([
     ),
   },
 ])
+
+export const activeTab = derived(
+  [activeTabId, windowTabs],
+  ([$activeTabId, $windowTabs]) =>
+    $windowTabs.find((tab) => tab.view.windowBrowserId === $activeTabId),
+)
 
 activeTabId.set(windowTabs.readOnce()[0].view.windowBrowserId)

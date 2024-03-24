@@ -51,10 +51,37 @@
       </button>
     </li>
   {/each}
-</ul>
+</ul> 
 
 <style>
+  ul {
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    list-style: none;
+  }
+
+  button[role='tab'] {
+    border: 0.25rem solid transparent;
+    background: none;
+    color: var(--theme-fg);
+
+    min-width: 16rem;
+    text-align: left;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.25rem;
+    
+    border-radius: 1rem;
+  }
+
+  button[role='tab']:hover {
+    border: 0.25rem solid var(--theme-active);
+  }
+
   button[role='tab'][aria-selected='true'] {
-    border-color: red;
+    border: 0.25rem solid var(--theme-active);
+    background-color: var(--theme-active);
   }
 </style>

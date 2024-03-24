@@ -6,6 +6,13 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* These are google's default theme colors, but I like them */
+  --theme-fg: oklch(90% 0.006 270);
+  --theme-bg: oklch(25% 0.006 270);
+  --theme-active: oklch(30% 0.006 270);
+}
+
 body {
   height: 100vh;
   max-height: 100vh;

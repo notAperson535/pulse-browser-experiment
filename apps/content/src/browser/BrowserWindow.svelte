@@ -4,22 +4,16 @@
 
 <script>
   // @ts-check
-  import { readable } from 'svelte/store'
+  import { derived } from 'svelte/store'
 
   import WebsiteView from './components/WebsiteView.svelte'
-  import * as WebsiteViewApi from './windowApi/WebsiteView.js'
-  import { browserImports } from './browserImports.js'
   import Tabs from './components/Tabs.svelte'
-  import {windowTabs} from './windowApi/WindowTabs.js'
+  import {windowTabs, activeTab} from './windowApi/WindowTabs.js'
 
-  const view = WebsiteViewApi.create(
-    browserImports.NetUtil.newURI('https://google.com'),
-  )
-
-  // TODO: Move this code somewhere closer to websiteview
-  const theme = readable(view.theme, (set) => {
-    view.events.on('themeChange', set)
-    return () => view.events.off('themeChange', set)
+  const theme = derived(activeTab, ($activeTab, set) => {
+    set($activeTab.view.theme)
+    $activeTab.view.events.on('themeChange', set)
+    return () => $activeTab.view.events.off('themeChange', set)
   })
   
   $: tabs = $windowTabs.toSorted((a, b) => a.view.windowBrowserId - b.view.windowBrowserId)
