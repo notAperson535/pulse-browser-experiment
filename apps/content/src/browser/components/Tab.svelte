@@ -18,6 +18,11 @@
     return () => view.events.off('changeIcon', set)
   })
 
+  const pageTitle = readable(view.title, (set) => {
+    view.events.on('changeTitle', set)
+    return () => view.events.off('changeTitle', set)
+  })
+
   $: selected = $activeTabId === view.windowBrowserId
 
   /**
@@ -79,8 +84,11 @@
       }
     }}
   >
-    <img src={$iconUrl} alt="Tab favicon" />
-    <span>Tab {index}</span>
+    <img src={$iconUrl} />
+    <span>{$pageTitle}</span>
+
+    <div class="spacer" />
+
     <button
       class="close"
       tabindex="-1"
@@ -103,6 +111,7 @@
 <style>
   li {
     list-style: none;
+    width: 100%;
   }
 
   button[role='tab'] {
@@ -110,20 +119,19 @@
     background: none;
     color: var(--theme-fg);
 
-    min-width: 16rem;
     text-align: left;
     padding: 0.5rem;
     margin-bottom: 0.25rem;
+    width: 100%;
 
     border-radius: 1rem;
 
     display: flex;
-    justify-content: space-between;
     align-items: center;
   }
 
   button[role='tab'] span {
-    padding-inline-start: 0.25rem;
+    padding-inline-start: 0.5rem;
   }
 
   button[role='tab']:hover {
@@ -138,6 +146,18 @@
   img {
     width: 1.5rem;
     height: 1.5rem;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+  }
+
+  .spacer {
+    flex-grow: 1;
+    flex-shrink: 1;
   }
 
   .close {

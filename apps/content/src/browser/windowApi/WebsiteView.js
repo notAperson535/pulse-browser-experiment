@@ -159,6 +159,10 @@ function registerListeners(view) {
     'DidChangeBrowserRemoteness',
     didChangeBrowserRemoteness.bind(view),
   )
+  view.browser.addEventListener(
+    'pagetitlechanged',
+    onPageTitleChanged.bind(view),
+  )
 
   registerTabProgressListener(view)
 }
@@ -180,6 +184,14 @@ function registerTabProgressListener(view) {
  */
 function didChangeBrowserRemoteness() {
   registerTabProgressListener(this)
+}
+
+/**
+ * @this {WebsiteView}
+ */
+function onPageTitleChanged() {
+  this.title = this.browser.contentTitle
+  this.events.emit('changeTitle', this.title)
 }
 
 // =======================================================================

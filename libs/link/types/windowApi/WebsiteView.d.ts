@@ -23,6 +23,7 @@ declare type WebsiteViewEvents = {
   loadingChange: boolean
   progressPercent: number
   changeIcon: string
+  changeTitle: string
   locationChange: WebsiteViewLocationChangeProperties
   themeChange: OklchTheme
 }
@@ -31,6 +32,7 @@ declare type WebsiteView = {
   windowBrowserId: number
   theme?: OklchTheme
   iconUrl?: string
+  title?: string
 
   browser: XULBrowserElement
   browserId?: number

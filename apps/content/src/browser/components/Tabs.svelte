@@ -18,5 +18,8 @@
   ul {
     padding: 0.5rem;
     margin: 0;
+
+    min-width: 16rem;
+    width: 16rem;
   }
 </style>
