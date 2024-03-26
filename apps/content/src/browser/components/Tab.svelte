@@ -10,8 +10,6 @@
 
   /** @type {WebsiteView} */
   export let view
-  /** @type {number} */
-  export let index
 
   const iconUrl = readable(view.iconUrl, (set) => {
     view.events.on('changeIcon', set)
