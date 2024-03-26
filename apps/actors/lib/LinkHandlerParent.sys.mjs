@@ -8,14 +8,15 @@
 export class LinkHandlerParent extends JSWindowActorParent {
   /** @param {{ name: 'Link:SetIcon'; data: { iconURL: string } }} aMsg */
   receiveMessage(aMsg) {
+    /** @type {Window} */
     const win = this.browsingContext.topChromeWindow
 
     switch (aMsg.name) {
       case 'Link:SetIcon':
-        return win.windowApi.tabs.setIcon(
-          this.browsingContext.embedderElement,
-          aMsg.data.iconURL,
-        )
+        return win.eventBus.emit('iconUpdate', {
+          browserId: this.browsingContext.embedderElement.browserId,
+          iconUrl: aMsg.data.iconURL,
+        })
     }
   }
 }

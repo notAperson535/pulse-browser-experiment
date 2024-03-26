@@ -8,6 +8,7 @@ import mitt from 'mitt'
 import { readable } from 'svelte/store'
 
 import { browserImports } from '../browserImports.js'
+import { eventBus } from './eventBus.js'
 
 const DEFAULT_BROWSER_ATTRIBUTES = {
   message: 'true',
@@ -63,6 +64,7 @@ export function create(uri) {
     browser.setAttribute('maychangeremoteness', 'true')
   }
 
+  /** @type {WebsiteView} */
   const view = {
     windowBrowserId: nextWindowBrowserId++,
     browser,
@@ -84,6 +86,13 @@ export function create(uri) {
     registerViewThemeListener(view)
   })
 
+  eventBus.on('iconUpdate', ({ browserId, iconUrl }) => {
+    if (view.browser.browserId === browserId) {
+      view.iconUrl = iconUrl
+      view.events.emit('changeIcon', iconUrl)
+    }
+  })
+
   return view
 }
 
@@ -100,6 +109,7 @@ function initialized(view) {
  */
 //function cleanup() {
 // TODO: Cleanup listeners created in WebsiteTheme.js
+// TODO: Cleanup icon listener
 //}
 
 /**

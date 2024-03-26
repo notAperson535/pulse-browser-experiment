@@ -11,7 +11,13 @@ declare module '@browser/event-bus' {
     body?: string
   }
 
+  export type IconUpdate = {
+    browserId: number
+    iconUrl: string
+  }
+
   export type EventBus = Emitter<{
     themeUpdate: ThemeUpdate
+    iconUpdate: IconUpdate
   }>
 }
