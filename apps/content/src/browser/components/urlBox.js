@@ -76,83 +76,91 @@ export function performCursedUrlStyling(inputElement) {
    * Manual currying!
    */
   return () => {
-    // @ts-expect-error - shenanagans !== type checking :(
-    const /** @type {nsIEditorType} */ editor = inputElement.editor
-    const /** @type {nsISelectionControllerType} */ controller =
-        editor?.selectionController
+    try {
+      // @ts-expect-error - shenanagans !== type checking :(
+      const /** @type {nsIEditorType} */ editor = inputElement.editor
+      const /** @type {nsISelectionControllerType} */ controller =
+          editor?.selectionController
 
-    if (!editor || !controller) {
-      console.debug('Editor and selection controller not available :(')
-      return
-    }
-
-    const textNode = editor.rootElement.firstChild
-    let startIndex = 0,
-      currentIndex = 0
-
-    const strikeOut = controller.getSelection(controller.SELECTION_URLSTRIKEOUT)
-    const secondary = controller.getSelection(controller.SELECTION_URLSECONDARY)
-
-    if (!textNode) {
-      return
-    }
-
-    // Consume the url scheme. No, that doesn't consume the third strike
-    // of resource:///, because the third strike has semantic meaning!
-    if (!inputElement.value.includes('://')) {
-      return
-    }
-    {
-      const isHttp = inputElement.value.startsWith('http://')
-
-      while (inputElement.value[currentIndex] != ':') {
-        currentIndex += 1
+      if (!editor || !controller) {
+        console.debug('Editor and selection controller not available :(')
+        return
       }
 
-      currentIndex += 3
+      const textNode = editor.rootElement.firstChild
+      let startIndex = 0,
+        currentIndex = 0
 
-      const range = document.createRange()
-      range.setStart(textNode, startIndex)
-      range.setEnd(textNode, currentIndex)
-      secondary.addRange(range)
+      const strikeOut = controller.getSelection(
+        controller.SELECTION_URLSTRIKEOUT,
+      )
+      const secondary = controller.getSelection(
+        controller.SELECTION_URLSECONDARY,
+      )
 
-      if (isHttp) {
+      if (!textNode) {
+        return
+      }
+
+      // Consume the url scheme. No, that doesn't consume the third strike
+      // of resource:///, because the third strike has semantic meaning!
+      if (!inputElement.value.includes('://')) {
+        return
+      }
+      {
+        const isHttp = inputElement.value.startsWith('http://')
+
+        while (inputElement.value[currentIndex] != ':') {
+          currentIndex += 1
+        }
+
+        currentIndex += 3
+
         const range = document.createRange()
         range.setStart(textNode, startIndex)
-        range.setEnd(textNode, currentIndex - 3)
-        strikeOut.addRange(range)
+        range.setEnd(textNode, currentIndex)
+        secondary.addRange(range)
+
+        if (isHttp) {
+          const range = document.createRange()
+          range.setStart(textNode, startIndex)
+          range.setEnd(textNode, currentIndex - 3)
+          strikeOut.addRange(range)
+        }
+
+        startIndex = currentIndex
       }
 
-      startIndex = currentIndex
-    }
+      if (!inputElement.value.includes('://www.')) {
+        return
+      }
+      {
+        currentIndex += 4
 
-    if (!inputElement.value.includes('://www.')) {
-      return
-    }
-    {
-      currentIndex += 4
+        const range = document.createRange()
+        range.setStart(textNode, startIndex)
+        range.setEnd(textNode, currentIndex)
 
-      const range = document.createRange()
-      range.setStart(textNode, startIndex)
-      range.setEnd(textNode, currentIndex)
-
-      secondary.addRange(range)
-      startIndex = currentIndex
-    }
-
-    // Consume path
-    if (!inputElement.value.substring(startIndex).includes('/')) {
-      return
-    }
-    {
-      while (inputElement.value[startIndex] != '/') {
-        startIndex += 1
+        secondary.addRange(range)
+        startIndex = currentIndex
       }
 
-      const range = document.createRange()
-      range.setStart(textNode, startIndex)
-      range.setEnd(textNode, inputElement.value.length)
-      secondary.addRange(range)
+      // Consume path
+      if (!inputElement.value.substring(startIndex).includes('/')) {
+        return
+      }
+      {
+        while (inputElement.value[startIndex] != '/') {
+          startIndex += 1
+        }
+
+        const range = document.createRange()
+        range.setStart(textNode, startIndex)
+        range.setEnd(textNode, inputElement.value.length)
+        secondary.addRange(range)
+      }
+    } catch (e) {
+      console.debug('Error performing url styling', e)
     }
   }
 }

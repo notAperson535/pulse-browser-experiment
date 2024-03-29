@@ -130,3 +130,13 @@ pref('browser.tabs.remote.separatePrivilegedMozillaWebContentProcess', true);
 
 pref('extensions.webextensions.remote', true);
 pref('extensions.webextensions.protocol.remote', true);
+
+// ==============================================================================
+// Gecko experiments
+pref('network.cookie.sameSite.noneRequiresSecure', false);
+pref('layout.css.grid-template-masonry-value.enabled', true);
+pref('devtools.debugger.features.windowless-service-workers', true);
+pref('image.jxl.enabled', true);
+pref('browser.urlbar.keepPanelOpenDuringImeComposition', false);
+pref('dom.webgpu.enabled', true);
+pref('privacy.webrtc.globalMuteToggles', false);
