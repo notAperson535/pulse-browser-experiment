@@ -58,6 +58,28 @@
     activeTabId.set(nextTab.view.windowBrowserId)
     return nextIndex
   }
+
+  function closeSelected() {
+    /** @type {number} */
+    let nextIndex = 0
+
+    windowTabs.update((tabs) => {
+      const tabIndex = tabs.findIndex(
+        (value) => value.view.windowBrowserId === view.windowBrowserId,
+      )
+
+      tabs = tabs.filter(
+        (tab) =>
+          $activeTabId != tab.view.windowBrowserId &&
+          !$selectedTabIds.includes(tab.view.windowBrowserId),
+      )
+
+      nextIndex = nextTab(tabIndex, tabs)
+      return tabs
+    })
+
+    return nextIndex
+  }
 </script>
 
 <li role="presentation">
@@ -103,6 +125,10 @@
       )
       let nextIndex = tabIndex
 
+      if (e.key == 'Backspace' || e.key == 'Backspace') {
+        nextIndex = closeSelected()
+      }
+
       if (e.key == 'ArrowDown' || e.key == 'ArrowRight') {
         nextIndex = nextTab(nextIndex, tabs)
       }
@@ -121,21 +147,8 @@
 
     <div class="spacer" />
 
-    <button
-      class="close"
-      tabindex="-1"
-      on:click={() =>
-        windowTabs.update((tabs) => {
-          const tabIndex = tabs.findIndex(
-            (value) => value.view.windowBrowserId === view.windowBrowserId,
-          )
-          nextTab(tabIndex, tabs)
-
-          let restOfTabs = tabs.filter(
-            (value) => value.view.windowBrowserId != view.windowBrowserId,
-          )
-          return restOfTabs
-        })}><RiCloseLine /></button
+    <button class="close" tabindex="-1" on:click={() => closeSelected()}
+      ><RiCloseLine /></button
     >
   </button>
 </li>

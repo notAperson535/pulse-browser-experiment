@@ -49,7 +49,7 @@
   <Tabs />
 
   <div class="tabs">
-    {#each tabs as tab}
+    {#each tabs as tab (tab.view.windowBrowserId)}
       <WebsiteView view={tab.view} />
     {/each}
   </div>

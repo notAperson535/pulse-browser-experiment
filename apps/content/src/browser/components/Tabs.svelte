@@ -11,7 +11,7 @@
 </script>
 
 <ul role="tablist">
-  {#each $windowTabs as tab}
+  {#each $windowTabs as tab (tab.view.windowBrowserId)}
     <Tab view={tab.view} />
   {/each}
 
