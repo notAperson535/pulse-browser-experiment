@@ -5,7 +5,12 @@
 <script>
   // @ts-check
   import RiCloseLine from 'svelte-remixicon/RiCloseLine.svelte'
-  import { activeTabId, windowTabs } from '../windowApi/WindowTabs.js'
+  import {
+    activeTabId,
+    selectedTabIds,
+    windowTabs,
+    addSelectedTabs,
+  } from '../windowApi/WindowTabs.js'
   import { readable } from 'svelte/store'
 
   /** @type {WebsiteView} */
@@ -21,7 +26,8 @@
     return () => view.events.off('changeTitle', set)
   })
 
-  $: selected = $activeTabId === view.windowBrowserId
+  $: isActive = $activeTabId === view.windowBrowserId
+  $: isSelected = $selectedTabIds.includes(view.windowBrowserId)
 
   /**
    * @param {import('../windowApi/WindowTabs.js').WebsiteTab[]} tabs
@@ -58,10 +64,38 @@
   <button
     role="tab"
     id={`tab-${view.windowBrowserId}`}
-    aria-selected={selected}
+    aria-selected={isActive}
+    data-not-active-selected={isSelected}
     aria-controls={`website-view-${view.windowBrowserId}`}
-    tabindex={selected ? 0 : -1}
-    on:click={() => activeTabId.set(view.windowBrowserId)}
+    tabindex={isActive ? 0 : -1}
+    on:click={(event) => {
+      if (event.ctrlKey) {
+        addSelectedTabs([view.windowBrowserId])
+        return
+      }
+
+      if (event.shiftKey) {
+        const thisIndex = $windowTabs.findIndex(
+          (tab) => tab.view.windowBrowserId === view.windowBrowserId,
+        )
+        const activeIndex = $windowTabs.findIndex(
+          (tab) => tab.view.windowBrowserId === $activeTabId,
+        )
+
+        const tabsToSelect = $windowTabs
+          .filter(
+            (_, index) =>
+              (thisIndex >= index && index >= activeIndex) ||
+              (thisIndex <= index && index <= activeIndex),
+          )
+          .map((tab) => tab.view.windowBrowserId)
+        addSelectedTabs(tabsToSelect)
+        return
+      }
+
+      activeTabId.set(view.windowBrowserId)
+      selectedTabIds.set([])
+    }}
     on:keydown={(e) => {
       const tabs = windowTabs.readOnce()
       const tabIndex = tabs.findIndex(
@@ -132,7 +166,8 @@
     padding-inline-start: 0.5rem;
   }
 
-  button[role='tab']:hover {
+  button[role='tab']:hover,
+  button[role='tab'][data-not-active-selected='true'] {
     border: 0.25rem solid var(--theme-active);
   }
 

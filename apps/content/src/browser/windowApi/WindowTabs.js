@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 // @ts-check
 import { derived } from 'svelte/store'
 
@@ -16,6 +15,42 @@ import * as WebsiteViewApi from './WebsiteView.js'
  */
 
 export const activeTabId = viewableWritable(0)
+
+/**
+ * This is an an array of "selected" tabs. The tab that is in {@link activeTabId} should never be in this variable. There is an subscriber responsible for handling that
+ *
+ * @type {import('../utils/readableWritable.js').ViewableWritable<number[]>}
+ */
+export const selectedTabIds = viewableWritable([])
+
+/**
+ * @param {number[]} ids
+ */
+export function addSelectedTabs(ids) {
+  selectedTabIds.update((selected) => {
+    for (const id of ids) {
+      if (!selected.includes(id)) {
+        selected = [...selected, id]
+      }
+    }
+
+    return selected
+  })
+}
+
+selectedTabIds.subscribe((ids) => {
+  const activeId = activeTabId.readOnce()
+  if (ids.includes(activeId)) {
+    selectedTabIds.set(ids.filter((id) => id != activeId))
+  }
+})
+
+activeTabId.subscribe((activeId) => {
+  const ids = selectedTabIds.readOnce()
+  if (ids.includes(activeId)) {
+    selectedTabIds.set(ids.filter((id) => id != activeId))
+  }
+})
 
 /**
  * @type {import('../utils/readableWritable.js').ViewableWritable<WebsiteTab[]>}
