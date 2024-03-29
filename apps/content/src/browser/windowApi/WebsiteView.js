@@ -7,19 +7,8 @@
 import mitt from 'mitt'
 import { readable } from 'svelte/store'
 
-import { browserImports } from '../browserImports.js'
+import { createBrowser } from '../utils/browserElement.js'
 import { eventBus } from './eventBus.js'
-
-const DEFAULT_BROWSER_ATTRIBUTES = {
-  message: 'true',
-  messagemanagergroup: 'browsers',
-  type: 'content',
-  contextmenu: 'browser_context_menu',
-}
-
-const { useRemoteTabs, useRemoteSubframe } = window.docShell.QueryInterface(
-  Ci.nsILoadContext,
-)
 
 let nextWindowBrowserId = 0
 
@@ -38,36 +27,10 @@ async function spinlock(predicate, timing = 10) {
  * @returns {WebsiteView}
  */
 export function create(uri) {
-  let originAttributes = browserImports.E10SUtils.predictOriginAttributes({
-    window,
-  })
-  const remoteType = browserImports.E10SUtils.getRemoteTypeForURI(
-    uri.spec,
-    useRemoteTabs,
-    useRemoteSubframe,
-    browserImports.E10SUtils.DEFAULT_REMOTE_TYPE,
-    uri,
-    originAttributes,
-  )
-
-  const browser = document.createXULElement('browser')
-  if (remoteType) {
-    browser.setAttribute('remoteType', remoteType)
-    browser.setAttribute('remote', true)
-  }
-
-  for (const attribute in DEFAULT_BROWSER_ATTRIBUTES) {
-    browser.setAttribute(attribute, DEFAULT_BROWSER_ATTRIBUTES[attribute])
-  }
-
-  if (useRemoteTabs) {
-    browser.setAttribute('maychangeremoteness', 'true')
-  }
-
   /** @type {WebsiteView} */
   const view = {
     windowBrowserId: nextWindowBrowserId++,
-    browser,
+    browser: createBrowser(uri),
 
     /** @type {import('mitt').Emitter<WebsiteViewEvents>} */
     events: mitt(),

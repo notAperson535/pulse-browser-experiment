@@ -2,14 +2,29 @@
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 
+<script context="module">
+  import { readable } from 'svelte/store'
+  import { browserImports } from '../browserImports'
+
+  const pageActions = readable(
+    [...browserImports.EPageActions.pageActions.entries()],
+    (set) => {
+      const update = () =>
+        set([...browserImports.EPageActions.pageActions.entries()])
+      browserImports.EPageActions.events.on('*', update)
+      return () => browserImports.EPageActions.events.off('*', update)
+    },
+  )
+</script>
+
 <script>
   // @ts-check
   import { writable } from 'svelte/store'
 
-  import { browserImports } from '../browserImports.js'
   import * as WebsiteViewApi from '../windowApi/WebsiteView.js'
   import * as UrlBoxApi from './urlBox.js'
   import { onMount } from 'svelte'
+  import PageAction from './PageAction.svelte'
 
   /** @type {WebsiteView} */
   export let view
@@ -112,6 +127,10 @@
     aria-controls="completions"
   />
 
+  {#each $pageActions as [_, pageAction]}
+    <PageAction {pageAction} />
+  {/each}
+
   <div
     hidden={!(inputFocused && hasAutocomplete)}
     class="completions"
@@ -153,9 +172,13 @@
 
 <style>
   .url-box {
+    display: flex;
+    align-items: center;
+
     flex-grow: 2;
     position: relative;
     height: 2.5rem;
+    padding-right: 0.25rem;
 
     border: 0.25rem solid var(--theme-active);
     border-radius: 1rem;
