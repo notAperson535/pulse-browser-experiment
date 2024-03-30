@@ -12,8 +12,8 @@
 </script>
 
 <ul role="tablist" on:dragstart={TabDragApi.dragStart} on:dragend={TabDragApi.dragEnd} on:dragover={TabDragApi.dragOver}>
-  {#each $windowTabs as tab (tab.view.windowBrowserId)}
-    <Tab view={tab.view} />
+  {#each $windowTabs as tab, index (tab.view.windowBrowserId)}
+    <Tab view={tab.view} {index} />
   {/each}
 
   <div class="spacer" />
@@ -42,7 +42,6 @@
 
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
   }
 
   .spacer {

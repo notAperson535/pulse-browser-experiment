@@ -13,9 +13,12 @@
   } from '../windowApi/WindowTabs.js'
   import { readable } from 'svelte/store'
   import { dragTabIds, dragTabsTranslation } from './tabs__drag.js'
+    import { derived } from '@amadeus-it-group/tansu'
 
   /** @type {WebsiteView} */
   export let view
+  /** @type {number} */
+  export let index
 
   const iconUrl = readable(view.iconUrl, (set) => {
     view.events.on('changeIcon', set)
@@ -26,6 +29,8 @@
     view.events.on('changeTitle', set)
     return () => view.events.off('changeTitle', set)
   })
+
+  const transform = derived([dragTabIds, dragTabsTranslation], ([dragTabIds, dragTabsTranslation]) => dragTabIds.includes(view.windowBrowserId) ? `translateY(${dragTabsTranslation}px)` : '')
 
   $: isActive = $activeTabId === view.windowBrowserId
   $: isSelected = $selectedTabIds.includes(view.windowBrowserId)
@@ -89,12 +94,13 @@
     role="tab"
     id={`tab-${view.windowBrowserId}`}
     aria-selected={isActive}
+    data-index={index}
     data-not-active-selected={isSelected}
     data-window-browser-id={view.windowBrowserId}
     data-dragging={$dragTabIds.includes(view.windowBrowserId)}
     aria-controls={`website-view-${view.windowBrowserId}`}
     tabindex={isActive ? 0 : -1}
-    style:transform={$dragTabIds.includes(view.windowBrowserId) ? `translateY(${$dragTabsTranslation}px)` : ''}
+    style:transform={$transform}
     on:mousedown={(event) => {
       if (event.ctrlKey) {
         addSelectedTabs([view.windowBrowserId])
@@ -185,6 +191,7 @@
     width: 100%;
 
     border-radius: 1rem;
+    margin-bottom: 0.25rem;
 
     display: flex;
     align-items: center;
@@ -206,6 +213,10 @@
 
   button[role='tab'][data-dragging='true'], button[role='tab'][data-dragging='true'] * {
     pointer-events: none;
+  }
+
+  button[role='tab'][data-dragging='false'] {
+    transition: transform 0.2s;
   }
 
   img {

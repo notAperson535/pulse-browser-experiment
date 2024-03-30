@@ -1,5 +1,5 @@
 // @ts-check
-import { batch, writable } from '@amadeus-it-group/tansu'
+import { writable } from '@amadeus-it-group/tansu'
 
 import { browserImports } from '../browserImports.js'
 import {
@@ -11,14 +11,14 @@ import {
 const WINDOW_ID_TYPE = 'text/x-fushra-window-id'
 const WINDOW_BROWSER_IDS_TYPE = 'text/x-fushra-window-browser-ids'
 
-const ANIM_SCREEN_Y_TYPE = 'number/x-fushra-screen-y'
-
 /** @type {import('@amadeus-it-group/tansu').WritableSignal<number[]>} */
 export let dragTabIds = writable([])
 export let dragTabsTranslation = writable(0)
 
 let startEventRelativeY = 0
 let lastScreenY = 0
+let startingIndex = 0
+let expectedIndex = 0
 /** @type {HTMLCanvasElement | null} */
 let dndCanvas = null
 /** @type {XULPanel | null} */
@@ -48,6 +48,7 @@ export function dragStart(event) {
     const rect = target.getBoundingClientRect()
 
     startEventRelativeY = event.screenY - rect.y
+    startingIndex = Number(target.dataset.index)
   }
 
   if (dragTabIds().length != 1) {
@@ -118,11 +119,46 @@ export function dragOver(event) {
  * @param {DragEvent} event
  */
 export function dragEnd(event) {
+  windowTabs.update((tabs) => {
+    if (dragTabIds().length == 0) {
+      return tabs
+    }
+
+    const targetBrowserId =
+      tabs[Math.min(expectedIndex, tabs.length - 1)].view.windowBrowserId
+    if (dragTabIds()[0] == targetBrowserId) {
+      return tabs
+    }
+
+    const draggingTabs = tabs.filter((tab) =>
+      dragTabIds().includes(tab.view.windowBrowserId),
+    )
+    return tabs
+      .filter((tab) => !dragTabIds().includes(tab.view.windowBrowserId))
+      .flatMap((tab) => {
+        if (tab.view.windowBrowserId == targetBrowserId) {
+          if (expectedIndex < startingIndex) {
+            return [...draggingTabs, tab]
+          }
+
+          return [tab, ...draggingTabs]
+        }
+
+        return tab
+      })
+  })
+
   dragTabIds.set([])
   dragTabsTranslation.set(0)
 
   startEventRelativeY = 0
   lastScreenY = 0
+
+  document
+    .querySelectorAll("button[role='tab']")
+    .forEach(
+      (/** @type {HTMLButtonElement} */ tab) => void (tab.style.transform = ''),
+    )
 }
 
 function groupDraggedTabs() {
@@ -173,62 +209,29 @@ function animateTabMove(event) {
     return
   }
 
-  batch(() => {
-    let indexChange = 0
+  /** @type {HTMLButtonElement} */
+  const firstDraggingTab = document.getElementById(`tab-${dragTabIds()[0]}`)
+  /** @type {HTMLLIElement} */
+  const firstPresentation = firstDraggingTab?.parentElement
+  const presentationBox = firstPresentation.getBoundingClientRect()
 
-    /** @type {HTMLElement} */
-    const target = event.target
-    const targetBrowserIdRaw = target.dataset.windowBrowserId
-    if (targetBrowserIdRaw) {
-      const targetBrowserId = Number(targetBrowserIdRaw)
+  dragTabsTranslation.set(
+    event.screenY - presentationBox.y - startEventRelativeY,
+  )
 
-      windowTabs.update((tabs) => {
-        if (dragTabIds().length == 0) {
-          return tabs
-        }
+  expectedIndex = Math.floor(event.screenY / presentationBox.height)
+  const translateAmount = presentationBox.height * dragTabIds().length
 
-        const draggingTabIndex = tabs.findIndex((tab) =>
-          dragTabIds().includes(tab.view.windowBrowserId),
-        )
-        const dragTargetIndex = tabs.findIndex(
-          (tab) => tab.view.windowBrowserId === targetBrowserId,
-        )
-
-        indexChange = dragTargetIndex - dragTargetIndex
-
-        const draggingTabs = tabs.filter((tab) =>
-          dragTabIds().includes(tab.view.windowBrowserId),
-        )
-        return tabs
-          .filter((tab) => !dragTabIds().includes(tab.view.windowBrowserId))
-          .flatMap((tab) => {
-            if (tab.view.windowBrowserId == targetBrowserId) {
-              if (dragTargetIndex == 0) {
-                return [...draggingTabs, tab]
-              }
-
-              return [tab, ...draggingTabs]
-            }
-
-            return tab
-          })
-      })
-    }
-
-    /** @type {HTMLButtonElement} */
-    const dragTrigger = document.getElementById(`tab-${dragTabIds()[0]}`)
-    const presentationElement = dragTrigger.parentElement
-
-    const presentationBox = presentationElement?.getBoundingClientRect()
-    dragTabsTranslation.set(
-      event.screenY -
-        presentationBox?.y -
-        startEventRelativeY -
-        indexChange * presentationBox?.height,
-    )
-
-    dragTrigger.style.transform = `translateY(${dragTabsTranslation()}px)`
-
-    lastScreenY = event.screenY
-  })
+  document
+    .querySelectorAll("button[role='tab'][data-dragging='false']")
+    .forEach((/** @type {HTMLButtonElement} */ tab) => {
+      const index = Number(tab.dataset.index)
+      if (index <= expectedIndex && index >= startingIndex) {
+        tab.style.transform = `translateY(-${translateAmount}px)`
+      } else if (index >= expectedIndex && index <= startingIndex) {
+        tab.style.transform = `translateY(${translateAmount}px)`
+      } else {
+        tab.style.transform = ''
+      }
+    })
 }
