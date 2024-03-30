@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 // @ts-check
+import { writable } from '@amadeus-it-group/tansu'
 import { derived } from 'svelte/store'
 
 import { browserImports } from '../browserImports.js'
-import { viewableWritable } from '../utils/readableWritable.js'
 import * as WebsiteViewApi from './WebsiteView.js'
 
 /**
@@ -14,14 +14,14 @@ import * as WebsiteViewApi from './WebsiteView.js'
  * @property {WebsiteView} view
  */
 
-export const activeTabId = viewableWritable(0)
+export const activeTabId = writable(0)
 
 /**
  * This is an an array of "selected" tabs. The tab that is in {@link activeTabId} should never be in this variable. There is an subscriber responsible for handling that
  *
- * @type {import('../utils/readableWritable.js').ViewableWritable<number[]>}
+ * @type {import('@amadeus-it-group/tansu').WritableSignal<number[]>}
  */
-export const selectedTabIds = viewableWritable([])
+export const selectedTabIds = writable([])
 
 /**
  * @param {number[]} ids
@@ -39,23 +39,23 @@ export function addSelectedTabs(ids) {
 }
 
 selectedTabIds.subscribe((ids) => {
-  const activeId = activeTabId.readOnce()
+  const activeId = activeTabId()
   if (ids.includes(activeId)) {
     selectedTabIds.set(ids.filter((id) => id != activeId))
   }
 })
 
 activeTabId.subscribe((activeId) => {
-  const ids = selectedTabIds.readOnce()
+  const ids = selectedTabIds()
   if (ids.includes(activeId)) {
     selectedTabIds.set(ids.filter((id) => id != activeId))
   }
 })
 
 /**
- * @type {import('../utils/readableWritable.js').ViewableWritable<WebsiteTab[]>}
+ * @type {import('@amadeus-it-group/tansu').WritableSignal<WebsiteTab[]>}
  */
-export const windowTabs = viewableWritable([
+export const windowTabs = writable([
   {
     kind: 'website',
     view: WebsiteViewApi.create(
@@ -76,4 +76,4 @@ export const activeTab = derived(
     $windowTabs.find((tab) => tab.view.windowBrowserId === $activeTabId),
 )
 
-activeTabId.set(windowTabs.readOnce()[0].view.windowBrowserId)
+activeTabId.set(windowTabs()[0].view.windowBrowserId)

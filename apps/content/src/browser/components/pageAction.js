@@ -1,21 +1,20 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 // @ts-check
+import { writable } from '@amadeus-it-group/tansu'
 import { readable } from 'svelte/store'
 
 import { browserImports } from '../browserImports.js'
 import { createBrowser } from '../utils/browserElement.js'
-import { viewableWritable } from '../utils/readableWritable.js'
 
 /**
  * @typedef {object} PageActionUiInternals
  * @property {import('resource://app/modules/EPageActions.sys.mjs').PageActionImpl} pageAction
  * @property {XULBrowserElement | null} browser
  * @property {MessageReceiver} [messageReceiver]
- * @property {import('../utils/readableWritable.js').ViewableWritable<any | undefined>} panel
- * @property {import('../utils/readableWritable.js').ViewableWritable<HTMLButtonElement | undefined>} trigger
+ * @property {import('@amadeus-it-group/tansu').WritableSignal<any | undefined>} panel
+ * @property {import('@amadeus-it-group/tansu').WritableSignal<HTMLButtonElement | undefined>} trigger
  */
 
 /**
@@ -27,8 +26,8 @@ export function setup(pageAction) {
     pageAction,
     browser: null,
 
-    panel: viewableWritable(undefined),
-    trigger: viewableWritable(undefined),
+    panel: writable(undefined),
+    trigger: writable(undefined),
   }
 
   view.messageReceiver = new MessageReceiver(view)
@@ -69,10 +68,10 @@ export function handleClick(view) {
 
     await buildPanelBrowser(view)
     // Panel may not exist if there is no popupUrl
-    if (view.panel.readOnce())
-      view.panel
-        .readOnce()
-        ?.openPopup(view.trigger.readOnce(), 'bottomright topright')
+    const panel = view.panel()
+    if (view.panel()) {
+      panel.openPopup(view.trigger(), 'bottomright topright')
+    }
   }
 }
 
@@ -166,8 +165,8 @@ async function buildPanelBrowser(view) {
     'webextension-view-type': 'popup',
   })
 
-  await spinLock(() => view.panel.readOnce())
-  view.panel.readOnce()?.appendChild(browser)
+  await spinLock(() => view.panel())
+  view.panel()?.appendChild(browser)
   view.browser = browser
   if (!view.browser) {
     return

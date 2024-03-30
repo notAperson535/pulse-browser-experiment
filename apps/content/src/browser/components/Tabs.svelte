@@ -6,11 +6,12 @@
   // @ts-check
   import { activeTabId, windowTabs } from '../windowApi/WindowTabs.js'
   import * as WebsiteViewApi from '../windowApi/WebsiteView.js'
+  import * as TabDragApi from './tabs__drag.js'
   import Tab from './Tab.svelte'
   import { browserImports } from '../browserImports.js'
 </script>
 
-<ul role="tablist">
+<ul role="tablist" on:dragstart={TabDragApi.dragStart} on:dragend={TabDragApi.dragEnd} on:dragover={TabDragApi.dragOver}>
   {#each $windowTabs as tab (tab.view.windowBrowserId)}
     <Tab view={tab.view} />
   {/each}
@@ -41,6 +42,7 @@
 
     display: flex;
     flex-direction: column;
+    gap: 0.25rem;
   }
 
   .spacer {

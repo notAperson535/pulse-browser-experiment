@@ -76,6 +76,9 @@ importers:
 
   apps/content:
     dependencies:
+      '@amadeus-it-group/tansu':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@catppuccin/palette':
         specifier: ^1.0.1
         version: 1.0.1
@@ -210,6 +213,10 @@ packages:
     resolution: {integrity: sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /@amadeus-it-group/tansu@1.0.0:
+    resolution: {integrity: sha512-JXR89NVtWT8rn7prB9j7/x/n/IxiWJEXhRWztyocrzb+M9hEhvIESeIE3mpSbrWRmDTyWvdpDCnOvKJ5/W8APQ==}
+    dev: false
 
   /@ampproject/remapping@2.2.1:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}

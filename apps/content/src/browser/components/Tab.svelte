@@ -12,6 +12,7 @@
     addSelectedTabs,
   } from '../windowApi/WindowTabs.js'
   import { readable } from 'svelte/store'
+  import { dragTabIds, dragTabsTranslation } from './tabs__drag.js'
 
   /** @type {WebsiteView} */
   export let view
@@ -84,13 +85,17 @@
 
 <li role="presentation">
   <button
+    draggable="true"
     role="tab"
     id={`tab-${view.windowBrowserId}`}
     aria-selected={isActive}
     data-not-active-selected={isSelected}
+    data-window-browser-id={view.windowBrowserId}
+    data-dragging={$dragTabIds.includes(view.windowBrowserId)}
     aria-controls={`website-view-${view.windowBrowserId}`}
     tabindex={isActive ? 0 : -1}
-    on:click={(event) => {
+    style:transform={$dragTabIds.includes(view.windowBrowserId) ? `translateY(${$dragTabsTranslation}px)` : ''}
+    on:mousedown={(event) => {
       if (event.ctrlKey) {
         addSelectedTabs([view.windowBrowserId])
         return
@@ -115,11 +120,22 @@
         return
       }
 
-      activeTabId.set(view.windowBrowserId)
+      if ($activeTabId == view.windowBrowserId) {
+        return
+      }
+
+      if ($selectedTabIds.includes(view.windowBrowserId)) {
+        const oldActiveId = $activeTabId
+        activeTabId.set(view.windowBrowserId)
+        selectedTabIds.set([...$selectedTabIds, oldActiveId])
+        return
+      }
+
       selectedTabIds.set([])
+      activeTabId.set(view.windowBrowserId)
     }}
     on:keydown={(e) => {
-      const tabs = windowTabs.readOnce()
+      const tabs = windowTabs()
       const tabIndex = tabs.findIndex(
         (value) => value.view.windowBrowserId === view.windowBrowserId,
       )
@@ -166,7 +182,6 @@
 
     text-align: left;
     padding: 0.5rem;
-    margin-bottom: 0.25rem;
     width: 100%;
 
     border-radius: 1rem;
@@ -187,6 +202,10 @@
   button[role='tab'][aria-selected='true'] {
     border: 0.25rem solid var(--theme-active);
     background-color: var(--theme-active);
+  }
+
+  button[role='tab'][data-dragging='true'], button[role='tab'][data-dragging='true'] * {
+    pointer-events: none;
   }
 
   img {

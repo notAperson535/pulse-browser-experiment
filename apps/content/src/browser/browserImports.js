@@ -9,4 +9,5 @@ export const browserImports = lazyESModuleGetters({
   E10SUtils: 'resource://gre/modules/E10SUtils.sys.mjs',
   EPageActions: 'resource://app/modules/EPageActions.sys.mjs',
   NetUtil: 'resource://gre/modules/NetUtil.sys.mjs',
+  PageThumbs: 'resource://gre/modules/PageThumbs.sys.mjs',
 })
