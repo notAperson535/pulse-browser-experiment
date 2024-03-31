@@ -322,7 +322,7 @@ class TabProgressListener {
    * @returns {void}
    */
   onSecurityChange(aWebProgress, aRequest, aState) {
-    // console.log('onSecurityChange')
+    this.view.events.emit('securityChange', aState)
   }
 
   /**

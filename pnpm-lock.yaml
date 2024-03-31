@@ -200,6 +200,9 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
     devDependencies:
+      '@amadeus-it-group/tansu':
+        specifier: ^1.0.0
+        version: 1.0.0
       gecko-types:
         specifier: github:quark-platform/gecko-types
         version: github.com/quark-platform/gecko-types/4e238b774e4415cbf0ad14b79060f39dd059bd29
@@ -216,7 +219,6 @@ packages:
 
   /@amadeus-it-group/tansu@1.0.0:
     resolution: {integrity: sha512-JXR89NVtWT8rn7prB9j7/x/n/IxiWJEXhRWztyocrzb+M9hEhvIESeIE3mpSbrWRmDTyWvdpDCnOvKJ5/W8APQ==}
-    dev: false
 
   /@ampproject/remapping@2.2.1:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}

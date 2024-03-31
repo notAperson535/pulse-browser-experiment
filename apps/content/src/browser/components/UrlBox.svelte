@@ -20,11 +20,18 @@
 <script>
   // @ts-check
   import { writable } from 'svelte/store'
+  import {
+    RiEyeLine,
+    RiLockLine,
+    RiLockUnlockLine,
+    RiQuestionLine,
+  } from 'svelte-remixicon'
 
   import * as WebsiteViewApi from '../windowApi/WebsiteView.js'
   import * as UrlBoxApi from './urlBox.js'
   import { onMount } from 'svelte'
   import PageAction from './PageAction.svelte'
+  import UrlBoxButton from './UrlBoxButton.svelte'
 
   /** @type {WebsiteView} */
   export let view
@@ -37,7 +44,13 @@
     view.browser.browsingContext?.currentURI,
   )
 
-  /** @type {HTMLInputElement} */
+  const security = readable(0, (set) => {
+    view.events.on('securityChange', set)
+    return () => view.events.off('securityChange', set)
+  })
+  const humanSecurity = UrlBoxApi.humanSecurityInfo(security)
+
+  /** @type {HTMLInputElement?} */
   let input
   let activeIndex = 0
   /**
@@ -82,20 +95,41 @@
   }
 
   onMount(() => {
-    uri.subscribe((uri) => decodeURI((input.value = uri?.spec || '')))
-    uri.subscribe((uri) => value.set(decodeURI(uri?.spec || '')))
-    uri.subscribe(UrlBoxApi.performCursedUrlStyling(input))
+    if (input) {
+      const style = UrlBoxApi.performCursedUrlStyling(input)
+      const unsubscribe = uri.subscribe((uri) => {
+        if (input) {
+          input.value = decodeURI(uri?.spec || '')
+          value.set(decodeURI(uri?.spec || ''))
+          style()
+        }
+      })
+
+      return () => unsubscribe()
+    }
   })
 </script>
 
 <div class="url-box">
+  <UrlBoxButton>
+    {#if $humanSecurity.has('broken')}
+      <RiEyeLine />
+    {:else if $humanSecurity.has('insecure')}
+      <RiLockUnlockLine />
+    {:else if $humanSecurity.has('secure')}
+      <RiLockLine />
+    {:else}
+      <RiQuestionLine />
+    {/if}
+  </UrlBoxButton>
+
   <input
     type="text"
     bind:this={input}
     bind:value={$value}
     on:focus={() => (inputFocused = true)}
     on:blur={() => (inputFocused = false)}
-    on:input={() => userValue.set(input.value)}
+    on:input={() => userValue.set(input?.value || '')}
     on:keydown={(e) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault()
@@ -178,7 +212,8 @@
     flex-grow: 2;
     position: relative;
     height: 2.5rem;
-    padding-right: 0.25rem;
+    padding: 0 2px;
+    gap: 0.125rem;
 
     border: 0.25rem solid var(--theme-active);
     border-radius: 1rem;
@@ -202,7 +237,6 @@
 
     border: none;
     background: none;
-    padding: 0 1rem;
     margin: 0;
   }
 

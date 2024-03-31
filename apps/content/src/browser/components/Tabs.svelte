@@ -11,7 +11,12 @@
   import { browserImports } from '../browserImports.js'
 </script>
 
-<ul role="tablist" on:dragstart={TabDragApi.dragStart} on:dragend={TabDragApi.dragEnd} on:dragover={TabDragApi.dragOver}>
+<ul
+  role="tablist"
+  on:dragstart={TabDragApi.dragStart}
+  on:dragend={TabDragApi.dragEnd}
+  on:dragover={TabDragApi.dragOver}
+>
   {#each $windowTabs as tab, index (tab.view.windowBrowserId)}
     <Tab view={tab.view} {index} />
   {/each}

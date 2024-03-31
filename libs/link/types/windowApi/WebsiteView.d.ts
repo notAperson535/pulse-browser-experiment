@@ -26,6 +26,7 @@ declare type WebsiteViewEvents = {
   changeTitle: string
   locationChange: WebsiteViewLocationChangeProperties
   themeChange: OklchTheme
+  securityChange: number
 }
 
 declare type WebsiteView = {

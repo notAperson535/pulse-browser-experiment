@@ -13,7 +13,7 @@
   } from '../windowApi/WindowTabs.js'
   import { readable } from 'svelte/store'
   import { dragTabIds, dragTabsTranslation } from './tabs__drag.js'
-    import { derived } from '@amadeus-it-group/tansu'
+  import { derived } from '@amadeus-it-group/tansu'
 
   /** @type {WebsiteView} */
   export let view
@@ -30,7 +30,13 @@
     return () => view.events.off('changeTitle', set)
   })
 
-  const transform = derived([dragTabIds, dragTabsTranslation], ([dragTabIds, dragTabsTranslation]) => dragTabIds.includes(view.windowBrowserId) ? `translateY(${dragTabsTranslation}px)` : '')
+  const transform = derived(
+    [dragTabIds, dragTabsTranslation],
+    ([dragTabIds, dragTabsTranslation]) =>
+      dragTabIds.includes(view.windowBrowserId)
+        ? `translateY(${dragTabsTranslation}px)`
+        : '',
+  )
 
   $: isActive = $activeTabId === view.windowBrowserId
   $: isSelected = $selectedTabIds.includes(view.windowBrowserId)
@@ -211,7 +217,8 @@
     background-color: var(--theme-active);
   }
 
-  button[role='tab'][data-dragging='true'], button[role='tab'][data-dragging='true'] * {
+  button[role='tab'][data-dragging='true'],
+  button[role='tab'][data-dragging='true'] * {
     pointer-events: none;
   }
 

@@ -12,6 +12,7 @@
     "mitt": "^3.0.1"
   },
   "devDependencies": {
+    "@amadeus-it-group/tansu": "^1.0.0",
     "gecko-types": "github:quark-platform/gecko-types",
     "zora": "^5.2.0"
   }

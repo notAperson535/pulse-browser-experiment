@@ -13,6 +13,53 @@ import tld from '../data/tld.txt'
  */
 
 /**
+ * @typedef {'insecure' | 'broken' | 'secure' | 'blocked-mixed-active' | 'loaded-mixed-active' | 'blocked-mixed-display' | 'loaded-mixed-display' | 'ssl-3' | 'week-cert' | 'user-overridden'} SecurityState
+ */
+
+/**
+ * @param {import('svelte/store').Readable<number>} store
+ */
+export function humanSecurityInfo(store) {
+  return derived(store, (store) => {
+    /** @type {Set<SecurityState>} */
+    const status = new Set()
+
+    if (store & Ci.nsIWebProgressListener.STATE_IS_INSECURE) {
+      status.add('insecure')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_IS_BROKEN) {
+      status.add('broken')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_IS_SECURE) {
+      status.add('secure')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_BLOCKED_MIXED_ACTIVE_CONTENT) {
+      status.add('blocked-mixed-active')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_LOADED_MIXED_ACTIVE_CONTENT) {
+      status.add('loaded-mixed-active')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_BLOCKED_MIXED_DISPLAY_CONTENT) {
+      status.add('blocked-mixed-display')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_LOADED_MIXED_DISPLAY_CONTENT) {
+      status.add('loaded-mixed-display')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_USES_SSL_3) {
+      status.add('ssl-3')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_USES_WEAK_CRYPTO) {
+      status.add('week-cert')
+    }
+    if (store & Ci.nsIWebProgressListener.STATE_CERT_USER_OVERRIDDEN) {
+      status.add('user-overridden')
+    }
+
+    return status
+  })
+}
+
+/**
  * Autocomplete that should take under a milisecond to evaluate. There will be
  * no debouncing on the user's input
  *
@@ -69,7 +116,7 @@ function slowAutocomplete(input) {
  * bits and bobs. Heavily based on mozilla's code. I did not
  * come up with these shenanagans
  *
- * @param {HTMLInputElement} inputElement
+ * @param {HTMLInputElement?} inputElement
  */
 export function performCursedUrlStyling(inputElement) {
   /**
@@ -77,6 +124,8 @@ export function performCursedUrlStyling(inputElement) {
    */
   return () => {
     try {
+      if (!inputElement) return
+
       // @ts-expect-error - shenanagans !== type checking :(
       const /** @type {nsIEditorType} */ editor = inputElement.editor
       const /** @type {nsISelectionControllerType} */ controller =
