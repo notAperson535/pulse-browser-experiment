@@ -4,11 +4,13 @@
 
 <script>
   export let disabled = false
+  /** @type {string | undefined} */
+  export let id = undefined
   /** @type {HTMLButtonElement | undefined} */
   export let button = undefined
 </script>
 
-<button on:click bind:this={button} {disabled}>
+<button on:click bind:this={button} {disabled} {id}>
   <slot />
 </button>
 

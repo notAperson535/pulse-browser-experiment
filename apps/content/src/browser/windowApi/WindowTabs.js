@@ -55,20 +55,7 @@ activeTabId.subscribe((activeId) => {
 /**
  * @type {import('@amadeus-it-group/tansu').WritableSignal<WebsiteTab[]>}
  */
-export const windowTabs = writable([
-  {
-    kind: 'website',
-    view: WebsiteViewApi.create(
-      browserImports.NetUtil.newURI('https://google.com'),
-    ),
-  },
-  {
-    kind: 'website',
-    view: WebsiteViewApi.create(
-      browserImports.NetUtil.newURI('https://svelte.dev'),
-    ),
-  },
-])
+export const windowTabs = writable([])
 
 export const activeTab = derived(
   [activeTabId, windowTabs],
@@ -76,4 +63,15 @@ export const activeTab = derived(
     $windowTabs.find((tab) => tab.view.windowBrowserId === $activeTabId),
 )
 
-activeTabId.set(windowTabs()[0].view.windowBrowserId)
+/**
+ * @param {string[]} urls
+ */
+export function initialize(urls) {
+  windowTabs.set(
+    urls.map((url) => ({
+      kind: 'website',
+      view: WebsiteViewApi.create(browserImports.NetUtil.newURI(url)),
+    })),
+  )
+  activeTabId.set(windowTabs()[0].view.windowBrowserId)
+}

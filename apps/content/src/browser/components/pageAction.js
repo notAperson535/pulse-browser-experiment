@@ -66,12 +66,13 @@ export function handleClick(view) {
       },
     })
 
-    await buildPanelBrowser(view)
     // Panel may not exist if there is no popupUrl
     const panel = view.panel()
     if (view.panel()) {
       panel.openPopup(view.trigger(), 'bottomright topright')
     }
+
+    await buildPanelBrowser(view)
   }
 }
 

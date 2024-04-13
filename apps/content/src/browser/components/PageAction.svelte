@@ -12,9 +12,15 @@
 
   /** @type {import('resource://app/modules/EPageActions.sys.mjs').PageActionImpl} */
   export let pageAction
+  /** @type {number} */
+  export let browserViewId
 
   const view = PageActionApi.setup(pageAction)
   const icons = PageActionApi.getIcons(view)
+  const extensionId = pageAction.extensionId
+    .replace('@', '')
+    .replace('}', '')
+    .replace('{', '')
   const trigger = view.trigger
   const panel = view.panel
 
@@ -45,7 +51,11 @@
   })
 </script>
 
-<UrlBoxButton bind:button={$trigger} on:click={PageActionApi.handleClick(view)}>
+<UrlBoxButton
+  bind:button={$trigger}
+  on:click={PageActionApi.handleClick(view)}
+  id={`page-action-icon__${extensionId}--${browserViewId}`}
+>
   {#if $icons}
     <img src={getIconUrlForPreferredSize($icons, 16)} />
   {:else}
@@ -54,7 +64,11 @@
 </UrlBoxButton>
 
 {#if pageAction.popupUrl}
-  <xul:panel bind:this={$panel} class="popup"></xul:panel>
+  <xul:panel
+    bind:this={$panel}
+    class="popup"
+    id={`page-action-panel__${extensionId}--${browserViewId}`}
+  ></xul:panel>
 {/if}
 
 <style>

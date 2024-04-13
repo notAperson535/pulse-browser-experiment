@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 /// @ts-check
 /// <reference types="@browser/link" />
 import mitt from 'resource://app/modules/mitt.sys.mjs'
@@ -15,6 +14,7 @@ export class PageAction {
   /** @type {import('resource://app/modules/EPageActions.sys.mjs').PageActionImpl['events']} */
   events = mitt()
 
+  extensionId
   tooltip
   popupUrl
   showMatches
@@ -31,6 +31,7 @@ export class PageAction {
    * @param {import('resource://app/modules/EPageActions.sys.mjs').PageActionOptions<string[]>} data
    */
   constructor(data) {
+    this.extensionId = data.extensionId
     this.tooltip = data.tooltip
     this.popupUrl = data.popupUrl
     this.showMatches = new MatchPatternSet(data.showMatches || [])

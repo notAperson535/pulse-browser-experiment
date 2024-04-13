@@ -4,6 +4,10 @@
 
 /// <reference types="gecko-types" />
 
+declare interface Window {
+  arguments?: [Record<string, string> | nsISupportsType]
+}
+
 declare interface Document {
   documentURIObject: nsIURIType
 }

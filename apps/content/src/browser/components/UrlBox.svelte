@@ -162,7 +162,9 @@
   />
 
   {#each $pageActions as [_, pageAction]}
-    <PageAction {pageAction} />
+    {#if $uri && pageAction.shouldShow($uri.asciiSpec, view.browserId || 0)}
+      <PageAction {pageAction} browserViewId={view.windowBrowserId} />
+    {/if}
   {/each}
 
   <div

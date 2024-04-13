@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "format": "pnpm lint && pnpm script:license-check --fix && prettier . --write --plugin prettier-plugin-svelte",
     "data": "concurrently -c auto pnpm:data:*",
-    "data:tld": "wget https://data.iana.org/TLD/tlds-alpha-by-domain.txt -O ./apps/content/src/browser/data/tld.txt"
+    "data:tld": "wget https://data.iana.org/TLD/tlds-alpha-by-domain.txt -O ./apps/content/src/browser/data/tld.txt",
+    "test": "pnpm script:unit-test"
   },
   "keywords": [],
   "author": "",
@@ -38,7 +39,7 @@
     "prettier": "^3.0.3",
     "prettier-plugin-organize-imports": "^3.2.3",
     "prettier-plugin-svelte": "^3.0.3",
-    "tap-spec": "^5.0.0",
+    "tap-parser": "^15.3.2",
     "turbo": "^1.11.2",
     "typescript": "^5.2.2"
   },

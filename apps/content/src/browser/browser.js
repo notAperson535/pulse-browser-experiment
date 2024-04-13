@@ -4,7 +4,25 @@
 // @ts-check
 import BrowserWindow from './BrowserWindow.svelte'
 import './browser.css'
+import * as WindowTabs from './windowApi/WindowTabs.js'
 import { registerEventBus } from './windowApi/eventBus.js'
+
+// Handle window arguments
+let rawArgs = window.arguments && window.arguments[0]
+/** @type {Record<string, string>} */
+let args = {}
+
+if (rawArgs && rawArgs instanceof Ci.nsISupports) {
+  args = rawArgs.wrappedJSObject || {}
+} else if (rawArgs) {
+  args = rawArgs
+}
+
+const initialUrls = args.initialUrl
+  ? [args.initialUrl]
+  : ['https://google.com/', 'https://svelte.dev/']
+
+WindowTabs.initialize(initialUrls)
 
 registerEventBus()
 
