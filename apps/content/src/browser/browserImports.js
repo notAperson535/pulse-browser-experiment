@@ -10,4 +10,5 @@ export const browserImports = lazyESModuleGetters({
   EPageActions: 'resource://app/modules/EPageActions.sys.mjs',
   NetUtil: 'resource://gre/modules/NetUtil.sys.mjs',
   PageThumbs: 'resource://gre/modules/PageThumbs.sys.mjs',
+  WindowTracker: 'resource://app/modules/BrowserWindowTracker.sys.mjs',
 })

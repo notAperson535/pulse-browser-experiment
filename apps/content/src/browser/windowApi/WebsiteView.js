@@ -7,6 +7,7 @@
 import mitt from 'mitt'
 import { readable } from 'svelte/store'
 
+import { browserImports } from '../browserImports.js'
 import { createBrowser } from '../utils/browserElement.js'
 import { eventBus } from './eventBus.js'
 
@@ -31,6 +32,8 @@ export function create(uri) {
   const view = {
     windowBrowserId: nextWindowBrowserId++,
     browser: createBrowser(uri),
+    uri,
+    websiteState: 'loading',
 
     /** @type {import('mitt').Emitter<WebsiteViewEvents>} */
     events: mitt(),
@@ -48,6 +51,13 @@ export function create(uri) {
     const { registerViewThemeListener } = await import('./WebsiteTheme.js')
     registerViewThemeListener(view)
   })
+
+  view.events.on('goTo', (e) => goTo(view, browserImports.NetUtil.newURI(e)))
+  view.events.on('locationChange', (e) => (view.uri = e.aLocation))
+  view.events.on(
+    'loadingChange',
+    (e) => (view.websiteState = e ? 'loading' : 'complete'),
+  )
 
   eventBus.on('iconUpdate', ({ browserId, iconUrl }) => {
     if (view.browser.browserId === browserId) {
@@ -293,6 +303,7 @@ class TabProgressListener {
    * @returns {void}
    */
   onLocationChange(aWebProgress, aRequest, aLocation, aFlags) {
+    if (!aWebProgress || !aWebProgress.isTopLevel) return
     this.view.events.emit('locationChange', {
       aWebProgress,
       aRequest,

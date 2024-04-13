@@ -20,6 +20,7 @@ declare type OklchTheme = {
 }
 
 declare type WebsiteViewEvents = {
+  goTo: string
   loadingChange: boolean
   progressPercent: number
   changeIcon: string
@@ -29,6 +30,8 @@ declare type WebsiteViewEvents = {
   securityChange: number
 }
 
+declare type WebsiteState = 'loading' | 'complete'
+
 declare type WebsiteView = {
   windowBrowserId: number
   theme?: OklchTheme
@@ -36,7 +39,9 @@ declare type WebsiteView = {
   title?: string
 
   browser: XULBrowserElement
+  uri: nsIURIType
   browserId?: number
+  websiteState: WebsiteState
 
   events: import('mitt').Emitter<WebsiteViewEvents>
 

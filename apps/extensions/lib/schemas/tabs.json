@@ -1,0 +1,197 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "OptionalPermission",
+        "id": "ExtraPerms1",
+        "choices": [
+          {
+            "type": "string",
+            "enum": ["tabs", "tabHide"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "tabs",
+    "description": "Provides access to information about currently open tabs",
+    "types": [
+      {
+        "id": "Tab",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -1,
+            "optional": true
+          },
+          "index": {
+            "type": "integer",
+            "minimum": -1
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "highlighted": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string",
+            "optional": true,
+            "permissions": ["tabs"]
+          },
+          "url": {
+            "type": "string",
+            "optional": true,
+            "permissions": ["tabs"]
+          },
+          "windowId": {
+            "type": "integer"
+          }
+        }
+      },
+      {
+        "type": "object",
+        "id": "QueryInfo",
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "optional": true
+          },
+          "title": {
+            "type": "string",
+            "optional": true
+          },
+          "url": {
+            "choices": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ],
+            "optional": true
+          },
+          "windowId": {
+            "type": "integer",
+            "optional": true
+          }
+        }
+      },
+      {
+        "type": "object",
+        "id": "UpdateInfo",
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "optional": true
+          },
+          "highlighted": {
+            "type": "boolean",
+            "optional": true
+          },
+          "url": {
+            "type": "string",
+            "optional": true
+          }
+        }
+      },
+      {
+        "type": "string",
+        "id": "TabStatus",
+        "enum": [{ "name": "loading" }, { "name": "complete" }]
+      }
+    ],
+    "functions": [
+      {
+        "name": "get",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer"
+          }
+        ],
+        "returns": {
+          "$ref": "Tab"
+        }
+      },
+      {
+        "name": "goBack",
+        "type": "function",
+        "async": true,
+        "parameters": [{ "name": "tabId", "type": "integer", "optional": true }]
+      },
+      {
+        "name": "goForward",
+        "type": "function",
+        "async": true,
+        "parameters": [{ "name": "tabId", "type": "integer", "optional": true }]
+      },
+      {
+        "name": "query",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "queryInfo",
+            "$ref": "QueryInfo"
+          }
+        ],
+        "returns": {
+          "type": "array",
+          "items": {
+            "$ref": "Tab"
+          }
+        }
+      },
+      {
+        "name": "remove",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "tabIds",
+            "choices": [
+              { "type": "integer" },
+              { "type": "array", "items": { "type": "integer" } }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "reload",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "tabIds",
+            "choices": [
+              { "type": "integer" },
+              { "type": "array", "items": { "type": "integer" } }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "update",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "tabId",
+            "type": "integer"
+          },
+          {
+            "name": "updateProperties",
+            "$ref": "UpdateInfo"
+          }
+        ]
+      }
+    ]
+  }
+]

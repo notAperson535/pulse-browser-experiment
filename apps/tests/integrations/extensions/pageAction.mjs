@@ -16,8 +16,8 @@ async function spinLock(predicate) {
   }
 }
 
-await TestManager.withBrowser('http://example.com/', async (window) => {
-  await TestManager.test('Extension Test', async (test) => {
+await TestManager.withBrowser(['http://example.com/'], async (window) => {
+  await TestManager.test('pageAction - Icon & Panel', async (test) => {
     const extension = ExtensionTestUtils.loadExtension(
       {
         manifest: {

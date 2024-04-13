@@ -5,6 +5,6 @@
 /// <reference path="./WebsiteView.d.ts" />
 
 declare module '@browser/tabs' {
-  export type WindowTab = { kind: 'tab'; view: WebsiteView }
-  export type WindowTabs = WindowTabs[]
+  export type WindowTab = { kind: 'website'; view: WebsiteView }
+  export type WindowTabs = WindowTab[]
 }

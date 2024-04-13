@@ -4,12 +4,13 @@
 // @ts-check
 import BrowserWindow from './BrowserWindow.svelte'
 import './browser.css'
+import { browserImports } from './browserImports.js'
 import * as WindowTabs from './windowApi/WindowTabs.js'
 import { registerEventBus } from './windowApi/eventBus.js'
 
 // Handle window arguments
 let rawArgs = window.arguments && window.arguments[0]
-/** @type {Record<string, string>} */
+/** @type {Record<string, string | string[]>} */
 let args = {}
 
 if (rawArgs && rawArgs instanceof Ci.nsISupports) {
@@ -18,8 +19,8 @@ if (rawArgs && rawArgs instanceof Ci.nsISupports) {
   args = rawArgs
 }
 
-const initialUrls = args.initialUrl
-  ? [args.initialUrl]
+const initialUrls = args.initialUrls
+  ? args.initialUrls
   : ['https://google.com/', 'https://svelte.dev/']
 
 WindowTabs.initialize(initialUrls)
@@ -27,3 +28,8 @@ WindowTabs.initialize(initialUrls)
 registerEventBus()
 
 new BrowserWindow({ target: document.body })
+
+browserImports.WindowTracker.registerWindow(window)
+window.addEventListener('unload', () =>
+  browserImports.WindowTracker.removeWindow(window),
+)

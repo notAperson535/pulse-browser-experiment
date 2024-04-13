@@ -68,9 +68,7 @@ this.pageAction = class extends ExtensionAPIPersistent {
      */
     onClicked({ fire }) {
       const callback = async (_name, clickInfo) => {
-        console.log(fire, fire.wakeup, !!fire.wakeup)
         if (fire.wakeup) await fire.wakeup()
-        console.log('fire')
         fire.sync(clickInfo)
       }
 

@@ -2,17 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 // @ts-check
-import { writable } from '@amadeus-it-group/tansu'
-import { derived } from 'svelte/store'
+import { derived, writable } from '@amadeus-it-group/tansu'
 
 import { browserImports } from '../browserImports.js'
 import * as WebsiteViewApi from './WebsiteView.js'
-
-/**
- * @typedef {object} WebsiteTab
- * @property {'website'} kind
- * @property {WebsiteView} view
- */
 
 export const activeTabId = writable(0)
 
@@ -22,6 +15,9 @@ export const activeTabId = writable(0)
  * @type {import('@amadeus-it-group/tansu').WritableSignal<number[]>}
  */
 export const selectedTabIds = writable([])
+
+window.activeTabId = activeTabId
+window.selectedTabIds = selectedTabIds
 
 /**
  * @param {number[]} ids
@@ -53,7 +49,7 @@ activeTabId.subscribe((activeId) => {
 })
 
 /**
- * @type {import('@amadeus-it-group/tansu').WritableSignal<WebsiteTab[]>}
+ * @type {import('@amadeus-it-group/tansu').WritableSignal<import('@browser/tabs').WindowTabs>}
  */
 export const windowTabs = writable([])
 
@@ -62,6 +58,9 @@ export const activeTab = derived(
   ([$activeTabId, $windowTabs]) =>
     $windowTabs.find((tab) => tab.view.windowBrowserId === $activeTabId),
 )
+
+window.windowTabs = windowTabs
+window.activeTab = activeTab
 
 /**
  * @param {string[]} urls

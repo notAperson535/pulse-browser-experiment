@@ -5,5 +5,11 @@
     "scopes": ["addon_parent"],
     "manifest": ["page_action"],
     "paths": [["pageAction"]]
+  },
+  "tabs": {
+    "schema": "chrome://bextensions/content/schemas/tabs.json",
+    "url": "chrome://bextensions/content/parent/ext-tabs.js",
+    "scopes": ["addon_parent"],
+    "paths": [["tabs"]]
   }
 }

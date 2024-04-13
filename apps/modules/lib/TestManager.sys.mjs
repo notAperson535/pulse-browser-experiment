@@ -46,11 +46,11 @@ class TestManagerSingleton {
   }
 
   /**
-   * @param {string} initialUrl
+   * @param {string[]} initialUrls
    * @param {(win: Window) => Promise<void>} using
    */
-  async withBrowser(initialUrl, using) {
-    const args = { initialUrl }
+  async withBrowser(initialUrls, using) {
+    const args = { initialUrls }
 
     /** @type {Window} */
     // @ts-expect-error Incorrect type gen

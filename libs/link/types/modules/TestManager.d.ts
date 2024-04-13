@@ -23,7 +23,7 @@ declare module 'resource://app/modules/TestManager.sys.mjs' {
       assertFn: (assert: IDefaultAssert) => Promise<void> | void,
     ): Promise<void>
     withBrowser(
-      defaultUrl: string,
+      defaultUrls: string[],
       using: (win: Window) => Promise<void>,
     ): Promise<void>
 

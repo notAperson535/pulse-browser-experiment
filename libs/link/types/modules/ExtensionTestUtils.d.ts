@@ -8,6 +8,38 @@ declare module 'resource://app/modules/ExtensionTestUtils.sys.mjs' {
   import type { Extension } from 'resource://gre/modules/Extension.sys.mjs'
 
   export type WebExtensionManifest = browser._manifest.WebExtensionManifest
+  export type TestBrowser = typeof browser & {
+    test: {
+      withHandlingUserInput: (callback: () => unknown) => unknown
+      notifyFail: (message: string) => unknown
+      notifyPass: (message: string) => unknown
+      log: (message: string) => unknown
+      sendMessage: (arg1?, arg2?) => unknown
+      fail: (message) => unknown
+      succeed: (message) => unknown
+      assertTrue: (test, message: string) => unknown
+      assertFalse: (test, message: string) => unknown
+      assertBool: (
+        test: string | boolean,
+        expected: boolean,
+        message: string,
+      ) => unknown
+      assertDeepEq: (expected, actual, message: string) => unknown
+      assertEq: (expected, actual, message: string) => unknown
+      assertNoLastError: () => unknown
+      assertLastError: (expectedError: string) => unknown
+      assertRejects: (
+        promise: Promise,
+        expectedError: ExpectedError,
+        message: string,
+      ) => unknown
+      assertThrows: (
+        func: () => unknown,
+        expectedError: ExpectedError,
+        message: string,
+      ) => unknown
+    }
+  }
 
   /* eslint @typescript-eslint/ban-types: 0 */
   export type ExtSerializableScript = string | Function | Array<string>
@@ -19,11 +51,15 @@ declare module 'resource://app/modules/ExtensionTestUtils.sys.mjs' {
 
   export type ExtensionWrapper = {
     extension: Extension
-    startup(): Promise<[string, string]>
-    unload(): Promise<unknown>
+    startup(): Promise<ExtensionWrapper>
+    unload(): Promise<void>
 
-    sendMsg(msg: string): void
-    awaitMsg(msg: string): Promise<void>
+    /**
+     * Specifies the number of tests that that this extension should execute
+     */
+    testCount(count: number): ExtensionWrapper
+    sendMsg(msg: string): ExtensionWrapper
+    awaitMsg(msg: string): Promise<ExtensionWrapper>
   }
 
   /**
