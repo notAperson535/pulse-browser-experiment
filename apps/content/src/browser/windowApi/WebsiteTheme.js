@@ -42,10 +42,10 @@ export function applyTheme(view, theme) {
     }
 
     const isLight = lightness > 50
-    const withinSpec = isLight ? lightness >= 75 : lightness <= 25
+    const withinSpec = isLight ? lightness >= 70 : lightness <= 30
 
     if (!withinSpec) {
-      lightness = isLight ? 75 : 25
+      lightness = isLight ? 70 : 30
       if (chroma === 0) {
         chroma = 0
       } else {
