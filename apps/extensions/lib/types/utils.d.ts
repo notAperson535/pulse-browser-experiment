@@ -4,8 +4,6 @@
 
 /* eslint-disable @typescript-eslint/ban-types */
 /// <reference types="gecko-types" />
-import { Module } from 'module'
-
 import { ConduitAddress } from 'resource://gre/modules/ConduitsParent.sys.mjs'
 import { Extension } from 'resource://gre/modules/Extension.sys.mjs'
 import { SchemaRoot } from 'resource://gre/modules/Schemas.sys.mjs'
@@ -14,6 +12,8 @@ import { PointConduit } from './ConduitChild'
 
 declare global {
   type SavedFrame = unknown
+  type NativeTab = import('@browser/tabs').WindowTab
+  type XULElement = Element
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   function getConsole(): any
@@ -897,9 +897,6 @@ declare global {
     windowId: number
   }
 
-  type NativeTab = any
-  type XULElement = any
-
   /**
    * A platform-independent base class for the platform-specific TabTracker
    * classes, which track the opening and closing of tabs, and manage the mapping
@@ -949,5 +946,607 @@ declare global {
      * exist.
      */
     abstract get activeTab(): NativeTab | null
+  }
+
+  /**
+   * A platform-independent base class for the platform-specific WindowTracker
+   * classes, which track the opening and closing of windows, and manage the
+   * mapping of them between numeric IDs and native tab objects.
+   */
+  class WindowTrackerBase extends EventEmitter {
+    constructor()
+    isBrowserWindow(window: Window): boolean
+
+    /**
+     * Returns an iterator for all currently active browser windows.
+     *
+     * @param includeIncomplete If true, include browser windows which are not yet fully loaded.
+     *        Otherwise, only include windows which are.
+     *
+     * @returns An iterator for all currently active browser windows.
+     */
+    browserWindows(includeIncomplete?: boolean): IterableIterator<Window>
+
+    /**
+     * The currently active, or topmost, browser window, or null if no
+     * browser window is currently open.
+     * @readonly
+     */
+    get topWindow(): Window | null
+
+    /**
+     * The currently active, or topmost, browser window that is not
+     * private browsing, or null if no browser window is currently open.
+     * @readonly
+     */
+    get topNonPBWindow(): Window | null
+
+    /**
+     * Returns the top window accessible by the extension.
+     *
+     * @param context The extension context for which to return the current window.
+     *
+     * @returns The top window accessible by the extension.
+     */
+    getTopWindow(context: BaseContext): Window | null
+
+    /**
+     * Returns the numeric ID for the given browser window.
+     *
+     * @param window The DOM window for which to return an ID.
+     *
+     * @returns The window's numeric ID.
+     */
+    getId(window: Window): number
+
+    /**
+     * Returns the browser window to which the given context belongs, or the top
+     * browser window if the context does not belong to a browser window.
+     *
+     * @param context The extension context for which to return the current window.
+     *
+     * @returns The browser window to which the given context belongs, or the top browser window.
+     */
+    getCurrentWindow(context: BaseContext): Window | null
+
+    /**
+     * Returns the browser window with the given ID.
+     *
+     * @param id The ID of the window to return.
+     * @param context The extension context for which the matching is being performed.
+     * @param strict If false, undefined will be returned instead of throwing an error in case no window exists with the given ID.
+     *
+     * @returns The browser window with the given ID.
+     * @throws ExtensionError If no window exists with the given ID and `strict` is true.
+     */
+    getWindow(
+      id: number,
+      context: BaseContext,
+      strict?: boolean,
+    ): Window | undefined
+
+    /**
+     * Returns true if any window open or close listeners are currently registered.
+     * @private
+     */
+    get _haveListeners(): boolean
+
+    /**
+     * Register the given listener function to be called whenever a new browser window is opened.
+     *
+     * @param listener The listener function to register.
+     */
+    addOpenListener(listener: (window: Window) => void): void
+    /**
+     * Unregister a listener function registered in a previous addOpenListener call.
+     *
+     * @param listener The listener function to unregister.
+     */
+    removeOpenListener(listener: (window: Window) => void): void
+
+    /**
+     * Register the given listener function to be called whenever a browser window is closed.
+     *
+     * @param listener The listener function to register.
+     */
+    addCloseListener(listener: (window: Window) => void): void
+
+    /**
+     * Unregister a listener function registered in a previous addCloseListener call.
+     *
+     * @param listener The listener function to unregister.
+     */
+    removeCloseListener(listener: (window: Window) => void): void
+
+    /**
+     * Handles load events for recently-opened windows, and adds additional listeners which may only be safely added when the window is fully loaded.
+     *
+     * @param event A DOM event to handle.
+     * @private
+     */
+    handleEvent(event: Event): void
+
+    /**
+     * Observes "domwindowopened" and "domwindowclosed" events, notifies the appropriate listeners, and adds necessary additional listeners to the new windows.
+     *
+     * @param window A DOM window.
+     * @param topic The topic being observed.
+     * @private
+     */
+    observe(window: Window, topic: string): void
+
+    /**
+     * Add an event listener to be called whenever the given DOM event is received at the top level of any browser window.
+     *
+     * @param type The type of event to listen for.
+     * @param listener The listener to invoke in response to the given events.
+     */
+    addListener(type: string, listener: Function | object): void
+
+    /**
+     * Removes an event listener previously registered via an addListener call.
+     *
+     * @param type The type of event to stop listening for.
+     * @param listener The listener to remove.
+     */
+    removeListener(type: string, listener: Function | object): void
+
+    /**
+     * Adds a listener for the given event to the given window.
+     *
+     * @param window The browser window to which to add the listener.
+     * @param eventType The type of DOM event to listen for, or "progress" to add a tab progress listener.
+     * @param listener The listener to add.
+     * @private
+     */
+    _addWindowListener(
+      window: Window,
+      eventType: string,
+      listener: Function | object,
+    ): void
+
+    /**
+     * A private method which is called whenever a new browser window is opened, and adds the necessary listeners to it.
+     *
+     * @param window The window being opened.
+     * @private
+     */
+    _handleWindowOpened(window: Window): void
+
+    /**
+     * Adds a tab progress listener to the given browser window.
+     *
+     * @param _window The browser window to which to add the listener.
+     * @param _listener The tab progress listener to add.
+     * @abstract
+     */
+    addProgressListener(_window: Window, _listener: object): void
+
+    /**
+     * Removes a tab progress listener from the given browser window.
+     *
+     * @param _window The browser window from which to remove the listener.
+     * @param _listener The tab progress listener to remove.
+     * @abstract
+     */
+    removeProgressListener(_window: Window, _listener: object): void
+  }
+
+  /**
+   * Manages native tabs, their wrappers, and their dynamic permissions for a
+   * particular extension.
+   */
+  abstract class TabManagerBase {
+    protected extension: Extension
+
+    constructor(extension: Extension)
+
+    /**
+     * If the extension has requested activeTab permission, grant it those permissions for the current inner window in the given native tab.
+     *
+     * @param nativeTab The native tab for which to grant permissions.
+     */
+    addActiveTabPermission(nativeTab: NativeTab): void
+
+    /**
+     * Revoke the extension's activeTab permissions for the current inner window of the given native tab.
+     *
+     * @param nativeTab The native tab for which to revoke permissions.
+     */
+    revokeActiveTabPermission(nativeTab: NativeTab): void
+
+    /**
+     * Returns true if the extension has requested activeTab permission, and has been granted permissions for the current inner window if this tab.
+     *
+     * @param nativeTab The native tab for which to check permissions.
+     * @returns True if the extension has activeTab permissions for this tab.
+     */
+    hasActiveTabPermission(nativeTab: NativeTab): boolean
+
+    /**
+     * Activate MV3 content scripts if the extension has activeTab or an (ungranted) host permission.
+     *
+     * @param nativeTab The native tab.
+     */
+    activateScripts(nativeTab: NativeTab): void
+
+    /**
+     * Returns true if the extension has permissions to access restricted properties of the given native tab.
+     *
+     * @param nativeTab The native tab for which to check permissions.
+     * @returns True if the extension has permissions for this tab.
+     */
+    hasTabPermission(nativeTab: NativeTab): boolean
+
+    /**
+     * Returns this extension's TabBase wrapper for the given native tab.
+     *
+     * @param nativeTab The tab for which to return a wrapper.
+     * @returns The wrapper for this tab.
+     */
+    getWrapper(nativeTab: NativeTab): TabBase | undefined
+
+    /**
+     * Determines access using extension context.
+     *
+     * @param _nativeTab The tab to check access on.
+     * @returns True if the extension has permissions for this tab.
+     */
+    protected abstract canAccessTab(_nativeTab: NativeTab): boolean
+
+    /**
+     * Converts the given native tab to a JSON-compatible object.
+     *
+     * @param nativeTab The native tab to convert.
+     * @param fallbackTabSize A geometry data if the lazy geometry data for this tab hasn't been initialized yet.
+     * @returns object
+     */
+    convert(nativeTab: NativeTab, fallbackTabSize?: object): object
+
+    /**
+     * Returns an iterator of TabBase objects which match the given query info.
+     *
+     * @param queryInfo An object containing properties on which to filter.
+     * @param context The extension context for which the matching is being performed.
+     * @returns Iterator<TabBase>
+     */
+    query(
+      queryInfo?: object | null,
+      context?: BaseContext | null,
+    ): Iterator<TabBase>
+
+    /**
+     * Returns a TabBase wrapper for the tab with the given ID.
+     *
+     * @param _tabId The ID of the tab for which to return a wrapper.
+     * @returns TabBase
+     * @throws ExtensionError If no tab exists with the given ID.
+     */
+    abstract get(_tabId: number): TabBase
+
+    /**
+     * Returns a new TabBase instance wrapping the given native tab.
+     *
+     * @param _nativeTab The native tab for which to return a wrapper.
+     * @returns TabBase
+     */
+    protected abstract wrapTab(_nativeTab: NativeTab): TabBase
+  }
+
+  interface QueryInfo {
+    active?: boolean
+    audible?: boolean
+    autoDiscardable?: boolean
+    cookieStoreId?: string
+    discarded?: boolean
+    hidden?: boolean
+    highlighted?: boolean
+    index?: number
+    muted?: boolean
+    pinned?: boolean
+    status?: string
+    title?: string
+    screen?: string | boolean
+    camera?: boolean
+    microphone?: boolean
+    url?: MatchPattern
+  }
+
+  interface Options {
+    frameIds?: number[]
+    returnResultsWithFrameIds?: boolean
+  }
+
+  /**
+   * A platform-independent base class for extension-specific wrappers around
+   * native tab objects.
+   */
+  abstract class TabBase {
+    protected nativeTab: NativeTab
+
+    constructor(extension: Extension, nativeTab: NativeTab, id: number)
+
+    /**
+     * Capture the visible area of this tab, and return the result as a data: URI.
+     *
+     * @param context The extension context for which to perform the capture.
+     * @param zoom The current zoom for the page.
+     * @param options The options with which to perform the capture.
+     * @returns Promise<string>
+     */
+    capture(
+      context: BaseContext,
+      zoom: number,
+      options?: {
+        format?: string
+        quality?: number
+        rect?: DOMRectInit
+        scale?: number
+      },
+    ): Promise<string>
+
+    /**
+     * @property innerWindowID
+     * @readonly
+     */
+    readonly innerWindowID: number | null
+
+    /**
+     * @property hasTabPermission
+     * @readonly
+     */
+    readonly hasTabPermission: boolean
+
+    /**
+     * @property hasActiveTabPermission
+     * @readonly
+     */
+    readonly hasActiveTabPermission: boolean
+
+    /**
+     * @property matchesHostPermission
+     * @readonly
+     */
+    readonly matchesHostPermission: boolean
+
+    /**
+     * @property incognito
+     * @readonly
+     */
+    readonly _incognito: boolean
+
+    /**
+     * @property _url
+     * @readonly
+     */
+    readonly _url: string
+
+    /**
+     * @property url
+     * @readonly
+     */
+    readonly url: string | undefined
+
+    /**
+     * @property _uri
+     * @readonly
+     */
+    readonly _uri: nsIURIType
+
+    /**
+     * @property _title
+     * @readonly
+     */
+    readonly _title: string
+
+    /**
+     * @property title
+     * @readonly
+     */
+    readonly title: nsIURIType | undefined
+
+    /**
+     * @property _favIconUrl
+     * @readonly
+     * @abstract
+     */
+    abstract readonly _favIconUrl: string | undefined
+
+    /**
+     * @property faviconUrl
+     * @readonly
+     */
+    readonly favIconUrl: nsIURIType | undefined
+
+    /**
+     * @property lastAccessed
+     * @readonly
+     * @abstract
+     */
+    abstract readonly lastAccessed: number | undefined
+
+    /**
+     * @property audible
+     * @readonly
+     * @abstract
+     */
+    abstract readonly audible: boolean | undefined
+
+    /**
+     * @property autoDiscardable
+     * @readonly
+     * @abstract
+     */
+    abstract readonly autoDiscardable: boolean
+
+    /**
+     * @property browser
+     * @readonly
+     * @abstract
+     */
+    abstract readonly browser: XULElement
+
+    /**
+     * @property browsingContext
+     * @readonly
+     */
+    readonly browsingContext: BrowsingContext
+
+    /**
+     * @property frameLoader
+     * @readonly
+     */
+    readonly frameLoader: FrameLoader
+
+    /**
+     * @property cookieStoreId
+     * @readonly
+     * @abstract
+     */
+    abstract readonly cookieStoreId: string | undefined
+
+    /**
+     * @property openerTabId
+     * @readonly
+     */
+    readonly openerTabId: number
+
+    /**
+     * @property discarded
+     * @readonly
+     * @abstract
+     */
+    abstract readonly discarded: number | undefined
+
+    /**
+     * @property height
+     * @readonly
+     * @abstract
+     */
+    abstract readonly height: number
+
+    /**
+     * @property hidden
+     * @readonly
+     * @abstract
+     */
+    abstract readonly hidden: boolean
+
+    /**
+     * @property index
+     * @readonly
+     * @abstract
+     */
+    abstract readonly index: number
+
+    /**
+     * @property mutedInfo
+     * @readonly
+     * @abstract
+     */
+    abstract readonly mutedInfo: MutedInfo
+
+    /**
+     * @property sharingState
+     * @readonly
+     * @abstract
+     */
+    abstract readonly sharingState: SharingState
+
+    /**
+     * @property pinned
+     * @readonly
+     * @abstract
+     */
+    abstract readonly pinned: boolean
+
+    /**
+     * @property active
+     * @readonly
+     * @abstract
+     */
+    abstract readonly active: boolean
+
+    /**
+     * @property highlighted
+     * @readonly
+     * @abstract
+     */
+    abstract readonly highlighted: boolean
+
+    /**
+     * @property status
+     * @readonly
+     * @abstract
+     */
+    abstract readonly status: string
+
+    /**
+     * @property width
+     * @readonly
+     * @abstract
+     */
+    abstract readonly width: number
+
+    /**
+     * @property window
+     * @readonly
+     * @abstract
+     */
+    abstract readonly window: DOMWindow
+
+    /**
+     * @property windowId
+     * @readonly
+     * @abstract
+     */
+    abstract readonly windowId: number
+
+    /**
+     * @property attention
+     * @readonly
+     * @abstract
+     */
+    abstract readonly attention: boolean
+
+    /**
+     * @property isArticle
+     * @readonly
+     * @abstract
+     */
+    abstract readonly isArticle: boolean
+
+    /**
+     * @property isInReaderMode
+     * @readonly
+     * @abstract
+     */
+    abstract readonly isInReaderMode: boolean
+
+    /**
+     * @property successorTabId
+     * @readonly
+     * @abstract
+     */
+    abstract readonly successorTabId: number | undefined
+
+    matches(queryInfo: QueryInfo): boolean
+
+    convert(fallbackTabSize?: any): any
+
+    queryContent(message: string, options: Options): Promise<any>[]
+
+    private _execute(
+      context: BaseContext,
+      details: InjectDetails,
+      kind: string,
+      method: string,
+    ): Promise<any>
+
+    executeScript(context: BaseContext, details: InjectDetails): Promise<any>
+
+    insertCSS(context: BaseContext, details: InjectDetails): Promise<void>
+
+    removeCSS(context: BaseContext, details: InjectDetails): Promise<void>
   }
 }

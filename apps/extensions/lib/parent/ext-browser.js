@@ -89,3 +89,111 @@ class TabTracker extends TabTrackerBase {
 /** @global */
 let tabTracker = new TabTracker()
 Object.assign(global, { tabTracker })
+
+class Tab extends TabBase {
+  get _favIconUrl() {
+    return this.nativeTab.view.iconUrl
+  }
+
+  get lastAccessed() {
+    return undefined
+  }
+  get audible() {
+    return undefined
+  }
+  get autoDiscardable() {
+    return false
+  }
+  get browser() {
+    return this.nativeTab.view.browser
+  }
+  get cookieStoreId() {
+    return undefined
+  }
+  get discarded() {
+    return undefined
+  }
+  get height() {
+    return this.nativeTab.view.browser.clientHeight
+  }
+  get hidden() {
+    return false
+  }
+  get index() {
+    const window = this.window
+    return (
+      window
+        ?.windowTabs()
+        .findIndex(
+          (tab) => tab.view.browserId == this.nativeTab.view.browserId,
+        ) || -1
+    )
+  }
+  get mutedInfo() {
+    return undefined
+  }
+  get sharingState() {
+    return undefined
+  }
+  get pinned() {
+    return false
+  }
+  get active() {
+    const window = this.window
+    return window?.activeTabId() == this.nativeTab.view.windowBrowserId
+  }
+  get highlighted() {
+    const window = this.window
+    return (
+      window
+        ?.selectedTabIds()
+        .some((tab) => tab == this.nativeTab.view.windowBrowserId) ?? false
+    )
+  }
+  get status() {
+    return this.nativeTab.view.websiteState
+  }
+  get width() {
+    return this.browser.clientWidth
+  }
+  get window() {
+    return lazy.WindowTracker.getWindowWithBrowser(this.nativeTab.view.browser)
+      ?.window
+  }
+  get windowId() {
+    return this.window?.windowId || -1
+  }
+  get attention() {
+    return false
+  }
+  get isArticle() {
+    return false
+  }
+  get isInReaderMode() {
+    return false
+  }
+  get successorTabId() {
+    return undefined
+  }
+}
+
+class TabManager extends TabManagerBase {
+  canAccessTab(_nativeTab) {
+    throw new Error('Method ')
+  }
+  get(tabId) {
+    const results = lazy.WindowTracker.getWindowWithBrowserId(tabId)
+    if (!results) return null
+    return this.wrapTab(results.tab)
+  }
+  /**
+   * @param {NativeTab} nativeTab
+   */
+  wrapTab(nativeTab) {
+    return new Tab(this.extension, nativeTab, nativeTab.view.browserId || -1)
+  }
+}
+
+extensions.on('startup', (type, extension) => {
+  defineLazyGetter(extension, 'tabManager', () => new TabManager(extension))
+})
