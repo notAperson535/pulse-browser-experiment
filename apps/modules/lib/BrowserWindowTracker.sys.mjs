@@ -37,14 +37,18 @@ export const WindowTracker = {
     return this.registeredWindows.get(wid)
   },
 
-  getWindowWithBrowser(browser) {
+  getWindowWithBrowserId(browserId) {
     for (const window of this.registeredWindows.values()) {
       const tab = window
         .windowTabs()
-        .find((t) => t.view.browserId === browser.browserId)
+        .find((t) => t.view.browserId === browserId)
       if (tab) return { window, tab }
     }
     return null
+  },
+
+  getWindowWithBrowser(browser) {
+    return this.getWindowWithBrowserId(browser.browserId)
   },
 
   focusWindow(id) {

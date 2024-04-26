@@ -5,9 +5,7 @@
 declare module 'resource://app/modules/BrowserWindowTracker.sys.mjs' {
   import type { Emitter } from 'resource://app/modules/mitt.sys.mjs'
 
-  // TODO: Replace this with the correct tab type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Tab = any
+  type Tab = import('@browser/tabs').WindowTab
 
   export type WindowTrackerEvents = {
     windowCreated: Window & typeof globalThis
@@ -34,6 +32,10 @@ declare module 'resource://app/modules/BrowserWindowTracker.sys.mjs' {
     removeWindow(w: typeof window): void
 
     getWindowById(wid: number): typeof window | undefined
+
+    getWindowWithBrowserId(
+      browserId: number,
+    ): { window: Window & typeof globalThis; tab: Tab } | null
 
     getWindowWithBrowser(
       browser: XULBrowserElement,

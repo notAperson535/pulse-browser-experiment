@@ -19,9 +19,8 @@ const lazy = lazyESModuleGetters({
 
 class TabTracker extends TabTrackerBase {
   get activeTab() {
-    /** @type {any | null} */
     const window = lazy.WindowTracker.getActiveWindow()
-    return window?.windowApi?.tabs?.getCurrentTab()
+    return window?.activeTab()
   }
 
   init() {
@@ -30,30 +29,34 @@ class TabTracker extends TabTrackerBase {
   }
 
   /**
-   * @param {*} nativeTab
+   * @param {import('@browser/tabs').WindowTab} nativeTab
    */
   getId(nativeTab) {
-    return nativeTab.getTabId()
+    return nativeTab.view.browserId || -1
   }
 
+  /**
+   * @param {number} tabId
+   * @param {import('@browser/tabs').WindowTab} default_
+   */
   getTab(tabId, default_) {
-    const { tab } = lazy.WindowTracker.getWindowWithBrowser(tabId) || {
+    const { tab } = lazy.WindowTracker.getWindowWithBrowserId(tabId) || {
       tab: default_,
     }
 
     return tab
   }
 
+  /**
+   * @param {XULBrowserElement} browser
+   */
   getBrowserData(browser) {
     const data = lazy.WindowTracker.getWindowWithBrowser(browser)
     if (!data) return { windowId: -1, tabId: -1 }
 
     return {
-      /** @type {number} */
-      // @ts-expect-error bad imported types
-      windowId: data.window.windowApi.id,
-      /** @type {number} */
-      tabId: data.tab.getTabId(),
+      windowId: data.window.windowId,
+      tabId: data.tab.view.browserId || -1,
     }
   }
 }
