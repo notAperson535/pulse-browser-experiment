@@ -13,7 +13,6 @@ this.browserAction = class extends ExtensionAPIPersistent {
 
   async onManifestEntry() {
     const { extension } = this
-    /** @type {browser_action__manifest.WebExtensionManifest__extended['browser_action']} */
     const options = extension.manifest.browser_action
 
     if (!options) {
@@ -67,25 +66,16 @@ this.browserAction = class extends ExtensionAPIPersistent {
      *        running extension context.
      */
     onClicked({ fire }) {
-      const { extension } = this
+      const /** @type {Extension} */ extension = this.extension
 
       /**
        * @param {import("resource://app/modules/EBrowserActions.sys.mjs").IBrowserActionEvents['click']} clickInfo
        */
       const callback = async (_name, clickInfo) => {
         if (fire.wakeup) await fire.wakeup()
-        const { tab, window } = lazy.WindowTracker.getWindowWithBrowserId(
-          clickInfo.tabId,
-        ) || { tab: null, window: null }
 
-        if (!tab || !window) {
-          return fire.sync(null, clickInfo.clickData)
-        }
-
-        fire.sync(
-          tabTracker.serializeTab(extension, tab, window),
-          clickInfo.clickData,
-        )
+        const tab = extension.tabManager.get(clickInfo.tabId)
+        fire.sync(tab.convert(), clickInfo.clickData)
       }
 
       this.on('click', callback)

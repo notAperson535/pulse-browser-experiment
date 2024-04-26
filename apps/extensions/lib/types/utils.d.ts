@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /// <reference types="gecko-types" />
 import { ConduitAddress } from 'resource://gre/modules/ConduitsParent.sys.mjs'
-import { Extension } from 'resource://gre/modules/Extension.sys.mjs'
+import { Extension as ToolkitExtension } from 'resource://gre/modules/Extension.sys.mjs'
 import { SchemaRoot } from 'resource://gre/modules/Schemas.sys.mjs'
 
 import { PointConduit } from './ConduitChild'
@@ -14,6 +14,12 @@ declare global {
   type SavedFrame = unknown
   type NativeTab = import('@browser/tabs').WindowTab
   type XULElement = Element
+
+  interface Extension extends ToolkitExtension {
+    tabManager: TabManagerBase
+    manifest: Omit<browser._manifest.WebExtensionManifest, 'browser_action'> &
+      browser_action__manifest.WebExtensionManifest__extended
+  }
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   function getConsole(): any
@@ -1532,6 +1538,15 @@ declare global {
 
     matches(queryInfo: QueryInfo): boolean
 
+    /**
+     * Converts this tab object to a JSON-compatible object containing the values
+     * of its properties which the extension is permitted to access, in the format
+     * required to be returned by WebExtension APIs.
+     *
+     * @param [fallbackTabSize]
+     *        A geometry data if the lazy geometry data for this tab hasn't been
+     *        initialized yet.
+     */
     convert(fallbackTabSize?: any): any
 
     queryContent(message: string, options: Options): Promise<any>[]
