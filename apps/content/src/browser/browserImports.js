@@ -7,6 +7,7 @@ import { lazyESModuleGetters } from '../shared/lazy.js'
 export const browserImports = lazyESModuleGetters({
   AppConstants: 'resource://gre/modules/AppConstants.sys.mjs',
   E10SUtils: 'resource://gre/modules/E10SUtils.sys.mjs',
+  EBrowserActions: 'resource://app/modules/EBrowserActions.sys.mjs',
   EPageActions: 'resource://app/modules/EPageActions.sys.mjs',
   NetUtil: 'resource://gre/modules/NetUtil.sys.mjs',
   PageThumbs: 'resource://gre/modules/PageThumbs.sys.mjs',

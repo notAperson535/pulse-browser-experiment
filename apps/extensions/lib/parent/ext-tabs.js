@@ -5,7 +5,7 @@
 // @ts-check
 /// <reference path="../types/index.d.ts"  />
 /// <reference path="./ext-browser.js"  />
-/// <reference path="../schemaTypes/tabs.d.ts"  />
+/// <reference types="@browser/link" />
 
 /**
  * @param {tabs__tabs.QueryInfo} queryInfo
@@ -60,20 +60,8 @@ const serialize =
    * @param {[import("@browser/tabs").WindowTab, Window]} in
    * @returns {tabs__tabs.Tab}
    */
-  ([tab, window]) => {
-    // TODO: Active tab & host permissions
-    const hasTabPermission = extension.hasPermission('tabs')
-
-    return {
-      id: tab.view.browserId,
-      index: window.windowTabs().findIndex((wTab) => wTab === tab),
-      active: window.activeTab() === tab,
-      highlighted: false, // TODO
-      title: hasTabPermission && tab.view.title,
-      url: hasTabPermission && tab.view.uri.asciiSpec,
-      windowId: window.windowId,
-    }
-  }
+  ([tab, window]) =>
+    tabTracker.serializeTab(extension, tab, window)
 
 this.tabs = class extends ExtensionAPIPersistent {
   PERSISTENT_EVENTS = {}

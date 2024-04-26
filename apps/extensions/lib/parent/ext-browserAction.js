@@ -5,29 +5,23 @@
 // @ts-check
 /// <reference path="../types/index.d.ts" />
 /// <reference path="./ext-browser.js" />
+/// <reference types="@browser/link" />
 
-this.pageAction = class extends ExtensionAPIPersistent {
-  /** @type {import('resource://app/modules/EPageActions.sys.mjs').PageAction | null} */
-  pageAction = null
+this.browserAction = class extends ExtensionAPIPersistent {
+  /** @type {import("resource://app/modules/EBrowserActions.sys.mjs").IBrowserAction | undefined} */
+  browserAction
 
   async onManifestEntry() {
     const { extension } = this
-    const options = extension.manifest.page_action
+    /** @type {browser_action__manifest.WebExtensionManifest__extended['browser_action']} */
+    const options = extension.manifest.browser_action
 
     if (!options) {
       return
     }
 
-    this.pageAction = new lazy.EPageActions.PageAction({
-      extensionId: extension.id,
-      tooltip: options.default_title,
-      popupUrl: options.default_popup,
-      showMatches: options.show_matches,
-      hideMatches: options.hide_matches,
-    })
-    this.pageAction.events.on('click', (v) => this.emit('click', v))
-    this.pageAction.setIcons(
-      lazy.ExtensionParent.IconDetails.normalize(
+    this.browserAction = lazy.EBrowserActions.BrowserAction(extension.id, {
+      icons: lazy.ExtensionParent.IconDetails.normalize(
         {
           path: options.default_icon || extension.manifest.icons,
           iconType: 'browserAction',
@@ -35,14 +29,16 @@ this.pageAction = class extends ExtensionAPIPersistent {
         },
         extension,
       ),
-    )
+      title: options.default_title || extension.id,
+      popupUrl: options.default_popup,
+    })
+    this.browserAction.getEmiter().on('click', (v) => this.emit('click', v))
 
-    lazy.EPageActions.registerPageAction(extension.id, this.pageAction)
+    lazy.EBrowserActions.actions.addKey(extension.id, this.browserAction)
   }
 
   onShutdown() {
-    const { extension } = this
-    lazy.EPageActions.removePageAction(extension.id)
+    lazy.EBrowserActions.actions.removeKey(this.extension.id)
   }
 
   PERSISTENT_EVENTS = {
@@ -71,9 +67,25 @@ this.pageAction = class extends ExtensionAPIPersistent {
      *        running extension context.
      */
     onClicked({ fire }) {
+      const { extension } = this
+
+      /**
+       * @param {import("resource://app/modules/EBrowserActions.sys.mjs").IBrowserActionEvents['click']} clickInfo
+       */
       const callback = async (_name, clickInfo) => {
         if (fire.wakeup) await fire.wakeup()
-        fire.sync(clickInfo)
+        const { tab, window } = lazy.WindowTracker.getWindowWithBrowserId(
+          clickInfo.tabId,
+        ) || { tab: null, window: null }
+
+        if (!tab || !window) {
+          return fire.sync(null, clickInfo.clickData)
+        }
+
+        fire.sync(
+          tabTracker.serializeTab(extension, tab, window),
+          clickInfo.clickData,
+        )
       }
 
       this.on('click', callback)
@@ -88,15 +100,25 @@ this.pageAction = class extends ExtensionAPIPersistent {
     },
   }
 
+  /** @returns {browser_action__browserAction.ApiGetterReturn} */
+  // eslint-disable-next-line no-unused-vars
   getAPI(context) {
+    const { browserAction } = this
+
     return {
-      pageAction: {
-        show: (id) => this.pageAction?.addShow(id),
-        hide: (id) => this.pageAction?.addHide(id),
+      browserAction: {
+        setTitle({ title }) {
+          // TODO: Tab & Window implementation
+          browserAction?.setTitle(title)
+        },
+        async getTitle() {
+          // TODO: Tab & Window impl
+          return browserAction?.getTitle().get()
+        },
 
         onClicked: new EventManager({
           context,
-          module: 'pageAction',
+          module: 'browserAction',
           event: 'onClicked',
           inputHandling: true,
           extensionApi: this,

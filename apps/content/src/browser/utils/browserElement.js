@@ -18,6 +18,8 @@ const DEFAULT_BROWSER_ATTRIBUTES = {
 /**
  * @param {nsIURIType} uri
  * @param {Record<string, string>} [attributes={}]
+ *
+ * @returns {XULBrowserElement}
  */
 export function createBrowser(uri, attributes = {}) {
   let originAttributes = browserImports.E10SUtils.predictOriginAttributes({

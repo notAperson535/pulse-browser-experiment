@@ -5,6 +5,7 @@
 <script>
   // @ts-check
   import { onMount } from 'svelte'
+  import { derived } from 'svelte/store'
 
   import RiRefreshLine from 'svelte-remixicon/RiRefreshLine.svelte'
   import RiArrowLeftLine from 'svelte-remixicon/RiArrowLeftLine.svelte'
@@ -16,11 +17,15 @@
   import ToolbarSpacer from './ToolbarSpacer.svelte'
   import UrlBox from './UrlBox.svelte'
   import HamburgurMenu from './HamburgurMenu.svelte'
+  import { browserImports } from '../browserImports'
+  import BrowserAction from './BrowserAction.svelte'
 
   /** @type {WebsiteView} */
   export let view
   /** @type {HTMLDivElement} */
   let browserContainer
+
+  const actions = browserImports.EBrowserActions.actions
 
   const canGoBack = WebsiteViewApi.locationProperty(
     view,
@@ -64,6 +69,9 @@
 
     <ToolbarSpacer />
 
+    {#each Object.entries($actions) as [extId, action] (extId)}
+      <BrowserAction browserView={view} {action} />
+    {/each}
     <HamburgurMenu />
   </div>
 

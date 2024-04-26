@@ -1,6 +1,5 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-import './extensions/browserAction.mjs'
-import './extensions/pageAction.mjs'
-import './extensions/tabs.mjs'
+
+/// <reference path="./_link.d.ts" />

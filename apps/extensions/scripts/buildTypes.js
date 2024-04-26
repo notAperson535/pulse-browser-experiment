@@ -23,6 +23,7 @@ const {
  * @property {string} description
  * @property {Type[]} [types]
  * @property {FunctionType[]} [functions]
+ * @property {FunctionType[]} [events]
  */
 
 /**
@@ -54,7 +55,7 @@ const {
 /**
  * @typedef {object} StringType
  * @property {'string'} type
- * @property {{ name: string }[]} [enum]
+ * @property {({ name: string } | string)[]} [enum]
  */
 
 /**
@@ -78,7 +79,12 @@ const {
  */
 
 const schemaFolder = path.join(process.cwd(), 'lib', 'schemas')
-const outFolder = path.join(process.cwd(), 'lib', 'schemaTypes')
+const outFolder = path.join(
+  process.cwd(),
+  '../..',
+  'libs/link/types',
+  'schemaTypes',
+)
 
 const printer = createPrinter({
   newLine: NewLineKind.LineFeed,
@@ -86,9 +92,14 @@ const printer = createPrinter({
 })
 
 const QUESTION_TOKEN = factory.createToken(SyntaxKind.QuestionToken)
+const UNDEFINED_TOKEN = factory.createKeywordTypeNode(
+  SyntaxKind.UndefinedKeyword,
+)
 
+const modules = []
 for (const file of fs.readdirSync(schemaFolder)) {
   const fileName = file.replace('.json', '')
+  modules.push(fileName)
   let text = fs.readFileSync(path.join(schemaFolder, file), 'utf8')
   const sourceFile = createSourceFile(file, text, ScriptTarget.Latest)
 
@@ -111,7 +122,11 @@ for (const file of fs.readdirSync(schemaFolder)) {
           undefined,
           'ApiGetterReturn',
           undefined,
-          generateApiGetter(namespace.functions || [], namespace.namespace),
+          generateApiGetter(
+            namespace.functions || [],
+            namespace.events || [],
+            namespace.namespace,
+          ),
         ),
       ])
 
@@ -132,6 +147,12 @@ for (const file of fs.readdirSync(schemaFolder)) {
   )
 }
 
+fs.writeFileSync(
+  path.join(outFolder, 'index.d.ts'),
+  '// @not-mpl \n' +
+    modules.map((m) => `/// <reference path="./${m}.d.ts" />`).join('\n'),
+)
+
 /**
  * @param {Type[]} types
  * @returns {import('typescript').TypeAliasDeclaration[]}
@@ -139,7 +160,10 @@ for (const file of fs.readdirSync(schemaFolder)) {
 function generateTypes(types) {
   return types
     .map((type) => {
-      if (type.$extend) return null
+      if (type.$extend) {
+        type.id = `${type.$extend}__extended`
+        type.type = 'object'
+      }
 
       return factory.createTypeAliasDeclaration(
         undefined,
@@ -153,16 +177,17 @@ function generateTypes(types) {
 
 /**
  * @param {FunctionType[]} functions
+ * @param {FunctionType[]} events
  * @param {string} apiName
  */
-function generateApiGetter(functions, apiName) {
+function generateApiGetter(functions, events, apiName) {
   return factory.createTypeLiteralNode([
     factory.createPropertySignature(
       undefined,
       factory.createIdentifier(apiName),
       undefined,
-      factory.createTypeLiteralNode(
-        functions.map((fn) =>
+      factory.createTypeLiteralNode([
+        ...functions.map((fn) =>
           factory.createPropertySignature(
             undefined,
             factory.createIdentifier(fn.name),
@@ -170,7 +195,25 @@ function generateApiGetter(functions, apiName) {
             generateTypeNode(fn),
           ),
         ),
-      ),
+        ...events.map((event) =>
+          factory.createPropertySignature(
+            undefined,
+            factory.createIdentifier(event.name),
+            undefined,
+            factory.createExpressionWithTypeArguments(
+              factory.createIdentifier('EventApi'),
+              [
+                factory.createLiteralTypeNode(
+                  factory.createStringLiteral(apiName),
+                ),
+                factory.createLiteralTypeNode(
+                  factory.createStringLiteral(event.name),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ]),
     ),
   ])
 }
@@ -243,7 +286,14 @@ function generateTypeNode(type) {
           ? typeof type.async !== 'undefined' && type.async
             ? factory.createTypeReferenceNode(
                 factory.createIdentifier('Promise'),
-                [generateTypeNode(type.returns)],
+                [
+                  type.returns.optional
+                    ? factory.createUnionTypeNode([
+                        generateTypeNode(type.returns),
+                        UNDEFINED_TOKEN,
+                      ])
+                    : generateTypeNode(type.returns),
+                ],
               )
             : generateTypeNode(type.returns)
           : factory.createKeywordTypeNode(SyntaxKind.UnknownKeyword),
@@ -256,7 +306,9 @@ function generateTypeNode(type) {
       if (type.enum) {
         return factory.createUnionTypeNode(
           type.enum.map((e) =>
-            factory.createLiteralTypeNode(factory.createStringLiteral(e.name)),
+            factory.createLiteralTypeNode(
+              factory.createStringLiteral(typeof e === 'string' ? e : e.name),
+            ),
           ),
         )
       }

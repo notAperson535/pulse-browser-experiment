@@ -1,8 +1,9 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "@browser/link",
   "version": "1.0.0",
   "description": "",
-  "types": "./types/_link.d.ts",
+  "types": "./types",
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -1,10 +1,10 @@
 {
-  "name": "extensions",
+  "name": "@browser/extensions",
   "type": "module",
   "version": "1.0.0",
   "scripts": {
     "build": "node ./scripts/buildTypes.js",
-    "dev": "watch 'pnpm build' ./lib/schemas/"
+    "dev": "watch 'pnpm build' ./lib/schemas/ ./scripts/"
   },
   "dependencies": {
     "@browser/link": "workspace:*"

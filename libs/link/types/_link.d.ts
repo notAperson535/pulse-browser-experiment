@@ -8,6 +8,8 @@
 /// <reference types="gecko-types" />
 /// <reference types="@types/firefox-webext-browser" />
 
+/// <reference path="./schemaTypes/index.d.ts" />
+
 /// <reference path="./globals/ChromeUtils.d.ts" />
 /// <reference path="./globals/Cr.d.ts" />
 /// <reference path="./globals/Elements.d.ts" />
@@ -21,10 +23,12 @@
 
 /// <reference path="./modules/AppConstants.d.ts" />
 /// <reference path="./modules/BrowserWindowTracker.d.ts" />
+/// <reference path="./modules/EBrowserActions.d.ts" />
 /// <reference path="./modules/EPageActions.d.ts" />
 /// <reference path="./modules/ExtensionTestUtils.d.ts" />
 /// <reference path="./modules/mitt.d.ts" />
 /// <reference path="./modules/PlacesUtils.d.ts" />
+/// <reference path="./modules/SvelteStore.d.ts" />
 /// <reference path="./modules/typedImport.d.ts" />
 /// <reference path="./modules/TestManager.d.ts" />
 /// <reference path="./modules/ZoomStore.d.ts" />

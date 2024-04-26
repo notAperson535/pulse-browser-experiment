@@ -91,6 +91,7 @@ declare interface XULFindBarElement extends HTMLElement {
 }
 
 declare interface XULPanel extends HTMLElement {
+  hidePopup(): void
   openPopup(target: HTMLElement, anchor: string)
 }
 

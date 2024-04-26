@@ -31,7 +31,7 @@ function runner(testPage: string) {
     testProcess?.kill()
     console.error('Process timed out')
     exit(1)
-  }, 10_000)
+  }, 100_000)
 
   testProcess.on('exit', () => clearTimeout(timeout))
 

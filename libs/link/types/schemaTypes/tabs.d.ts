@@ -5,6 +5,7 @@
 // DO NOT MODIFY MANUALLY
 
 declare module tabs__manifest {
+  type OptionalPermission__extended = 'tabs' | 'tabHide'
   type ApiGetterReturn = {
     manifest: {}
   }

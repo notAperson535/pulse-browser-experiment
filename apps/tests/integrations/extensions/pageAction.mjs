@@ -17,6 +17,17 @@ async function spinLock(predicate) {
 }
 
 await TestManager.withBrowser(['http://example.com/'], async (window) => {
+  await spinLock(() =>
+    window
+      ?.windowTabs()
+      .map(
+        (tab) =>
+          tab.view.browser?.mInitialized &&
+          tab.view.websiteState === 'complete',
+      )
+      .reduce((p, c) => p && c, true),
+  )
+
   await TestManager.test('pageAction - Icon & Panel', async (test) => {
     const extension = ExtensionTestUtils.loadExtension(
       {

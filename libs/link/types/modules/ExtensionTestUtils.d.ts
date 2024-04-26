@@ -38,6 +38,10 @@ declare module 'resource://app/modules/ExtensionTestUtils.sys.mjs' {
         expectedError: ExpectedError,
         message: string,
       ) => unknown
+
+      onMessage: {
+        addListener: (fn: Function) => void
+      }
     }
   }
 

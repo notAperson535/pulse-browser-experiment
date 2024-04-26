@@ -4,9 +4,11 @@
 
 <script>
   export let disabled = false
+  /** @type {HTMLButtonElement} */
+  export let buttonElement = undefined
 </script>
 
-<button on:click {disabled}>
+<button on:click {disabled} bind:this={buttonElement}>
   <slot />
 </button>
 

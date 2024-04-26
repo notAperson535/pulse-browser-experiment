@@ -8,7 +8,6 @@
     "types": [
       {
         "$extend": "OptionalPermission",
-        "id": "ExtraPerms1",
         "choices": [
           {
             "type": "string",

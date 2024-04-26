@@ -13,6 +13,7 @@ const { lazyESModuleGetters } = typedImportUtils
 
 const lazy = lazyESModuleGetters({
   WindowTracker: 'resource://app/modules/BrowserWindowTracker.sys.mjs',
+  EBrowserActions: 'resource://app/modules/EBrowserActions.sys.mjs',
   EPageActions: 'resource://app/modules/EPageActions.sys.mjs',
   ExtensionParent: 'resource://gre/modules/ExtensionParent.sys.mjs',
 })
@@ -36,8 +37,10 @@ class TabTracker extends TabTrackerBase {
   }
 
   /**
+   * @template {import('@browser/tabs').WindowTab | null} T
    * @param {number} tabId
-   * @param {import('@browser/tabs').WindowTab} default_
+   * @param {T} default_
+   * @returns {T}
    */
   getTab(tabId, default_) {
     const { tab } = lazy.WindowTracker.getWindowWithBrowserId(tabId) || {
@@ -45,6 +48,28 @@ class TabTracker extends TabTrackerBase {
     }
 
     return tab
+  }
+
+  /**
+   * @param {import('resource://gre/modules/Extension.sys.mjs').Extension} extension
+   * @param {import('@browser/tabs').WindowTab} tab
+   * @param {Window} window
+   *
+   * @returns {tabs__tabs.Tab}
+   */
+  serializeTab(extension, tab, window) {
+    // TODO: Active tab & host permissions
+    const hasTabPermission = extension.hasPermission('tabs')
+
+    return {
+      id: tab.view.browserId,
+      index: window.windowTabs().findIndex((wTab) => wTab === tab),
+      active: window.activeTab() === tab,
+      highlighted: false, // TODO
+      title: (hasTabPermission && tab.view.title) || undefined,
+      url: (hasTabPermission && tab.view.uri.asciiSpec) || undefined,
+      windowId: window.windowId,
+    }
   }
 
   /**
@@ -61,4 +86,6 @@ class TabTracker extends TabTrackerBase {
   }
 }
 
-Object.assign(global, { tabTracker: new TabTracker() })
+/** @global */
+let tabTracker = new TabTracker()
+Object.assign(global, { tabTracker })

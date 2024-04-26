@@ -4,6 +4,8 @@
 
 /* eslint-disable @typescript-eslint/ban-types */
 /// <reference types="gecko-types" />
+import { Module } from 'module'
+
 import { ConduitAddress } from 'resource://gre/modules/ConduitsParent.sys.mjs'
 import { Extension } from 'resource://gre/modules/Extension.sys.mjs'
 import { SchemaRoot } from 'resource://gre/modules/Schemas.sys.mjs'
@@ -155,6 +157,7 @@ declare global {
     [LISTENERS]: Map<any, any>;
     [ONCE_MAP]: WeakMap<object, any>
   }
+
   /**
    * Base class for WebExtension APIs.  Each API creates a new class
    * that inherits from this class, the derived class is instantiated
@@ -162,7 +165,7 @@ declare global {
    */
   class ExtensionAPI extends EventEmitter {
     constructor(extension: any)
-    extension: any
+    extension: Extension
     destroy(): void
     onManifestEntry(entry: any): void
     getAPI(context: any): void
@@ -739,6 +742,16 @@ declare global {
      */
     loadScript(scriptUrl: string): void
   }
+
+  type EventApi<Module extends string, Event extends string> = {
+    [x: number]: () => void
+    addListener: (...args: any[]) => void
+    removeListener: (...args: any[]) => void
+    hasListener: (...args: any[]) => boolean
+    setUserInput: any
+    _typechecking: { module: Module; event: Event }
+  }
+
   /**
    * This is a generic class for managing event listeners.
    *
@@ -765,7 +778,7 @@ declare global {
    * ExtensionContext in the chrome process or ExtensionContext in a
    * content process).
    */
-  class EventManager {
+  class EventManager<Module extends string, Event extends string> {
     static _initPersistentListeners(extension: any): boolean
     static _writePersistentListeners(extension: any): void
     static primeListeners(extension: any, isInStartup?: boolean): void
@@ -799,7 +812,13 @@ declare global {
       key?: any,
       primeId?: any,
     ): void
-    constructor(params: any)
+    constructor(params: {
+      context: any
+      module: Module
+      event: Event
+      inputHandling: boolean
+      extensionApi: ExtensionAPI
+    })
     context: any
     module: any
     event: any
@@ -815,13 +834,7 @@ declare global {
     hasListener(callback: any): boolean
     revoke(): void
     close(): void
-    api(): {
-      [x: number]: () => void
-      addListener: (...args: any[]) => void
-      removeListener: (...args: any[]) => void
-      hasListener: (...args: any[]) => boolean
-      setUserInput: any
-    }
+    api(): EventApi<Module, Event>
   }
   const LISTENERS: unique symbol
   const ONCE_MAP: unique symbol

@@ -1,0 +1,126 @@
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "WebExtensionManifest",
+        "properties": {
+          "browser_action": {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "default_icon": {
+                "optional": true,
+                "$ref": "IconPath"
+              },
+              "default_popup": {
+                "optional": true,
+                "type": "string",
+                "format": "relativeUrl"
+              },
+              "default_title": {
+                "optional": true,
+                "type": "string"
+              },
+              "theme_icons": {
+                "optional": true,
+                "type": "array",
+                "items": { "$ref": "ThemeIcons" }
+              },
+              "browser_style": {
+                "optional": true,
+                "type": "boolean"
+              },
+              "default_area": {
+                "optional": true,
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "browserAction",
+    "description": "",
+    "types": [],
+    "events": [
+      {
+        "name": "onClicked",
+        "type": "function",
+        "description": "Notify when the browser action is clicked",
+        "parameters": [
+          {
+            "name": "tab",
+            "$ref": "Tab"
+          },
+          {
+            "name": "OnClickData",
+            "type": "object",
+            "properties": {
+              "modifiers": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "button": { "type": "integer" }
+            }
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "name": "setTitle",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "optional": true
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "getTitle",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true
+              }
+            }
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "optional": true
+        }
+      }
+    ]
+  }
+]
