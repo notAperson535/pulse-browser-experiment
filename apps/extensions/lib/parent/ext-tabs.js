@@ -7,62 +7,6 @@
 /// <reference path="./ext-browser.js"  />
 /// <reference types="@browser/link" />
 
-/**
- * @param {tabs__tabs.QueryInfo} queryInfo
- * @returns {[import("@browser/tabs").WindowTab, Window][]}
- */
-function query(queryInfo) {
-  const windows = [...lazy.WindowTracker.registeredWindows.entries()]
-
-  const urlMatchSet =
-    (queryInfo.url &&
-      (Array.isArray(queryInfo.url)
-        ? new MatchPatternSet(queryInfo.url)
-        : new MatchPatternSet([queryInfo.url]))) ||
-    null
-
-  return windows.flatMap(([windowId, window]) => {
-    const tabs = window.windowTabs()
-    const activeTab = window.activeTab()
-
-    return tabs
-      .filter((tab) => {
-        const active =
-          queryInfo.active !== null
-            ? queryInfo.active
-              ? tab === activeTab
-              : tab !== activeTab
-            : true
-        const title = queryInfo.title
-          ? queryInfo.title === tab.view.title
-          : true
-        const url =
-          urlMatchSet === null
-            ? true
-            : urlMatchSet.matches(tab.view.uri.asciiSpec)
-        const window =
-          queryInfo.windowId === null ? true : queryInfo.windowId === windowId
-
-        return active && title && url && window
-      })
-      .map(
-        /** @returns {[import("@browser/tabs").WindowTab, Window]} */ (tab) => [
-          tab,
-          window,
-        ],
-      )
-  })
-}
-
-const serialize =
-  (extension) =>
-  /**
-   * @param {[import("@browser/tabs").WindowTab, Window]} in
-   * @returns {tabs__tabs.Tab}
-   */
-  ([tab, window]) =>
-    tabTracker.serializeTab(extension, tab, window)
-
 this.tabs = class extends ExtensionAPIPersistent {
   PERSISTENT_EVENTS = {}
 

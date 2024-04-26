@@ -21,7 +21,7 @@ const lazy = lazyESModuleGetters({
 class TabTracker extends TabTrackerBase {
   get activeTab() {
     const window = lazy.WindowTracker.getActiveWindow()
-    return window?.activeTab()
+    return window?.activeTab() || null
   }
 
   init() {
@@ -48,28 +48,6 @@ class TabTracker extends TabTrackerBase {
     }
 
     return tab
-  }
-
-  /**
-   * @param {import('resource://gre/modules/Extension.sys.mjs').Extension} extension
-   * @param {import('@browser/tabs').WindowTab} tab
-   * @param {Window} window
-   *
-   * @returns {tabs__tabs.Tab}
-   */
-  serializeTab(extension, tab, window) {
-    // TODO: Active tab & host permissions
-    const hasTabPermission = extension.hasPermission('tabs')
-
-    return {
-      id: tab.view.browserId,
-      index: window.windowTabs().findIndex((wTab) => wTab === tab),
-      active: window.activeTab() === tab,
-      highlighted: false, // TODO
-      title: (hasTabPermission && tab.view.title) || undefined,
-      url: (hasTabPermission && tab.view.uri.asciiSpec) || undefined,
-      windowId: window.windowId,
-    }
   }
 
   /**
