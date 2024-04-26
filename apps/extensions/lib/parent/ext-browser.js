@@ -192,6 +192,14 @@ class TabManager extends TabManagerBase {
   wrapTab(nativeTab) {
     return new Tab(this.extension, nativeTab, nativeTab.view.browserId || -1)
   }
+
+  /**
+   * @param {NativeTab} nativeTab
+   * @public
+   */
+  publicWrapTab(nativeTab) {
+    return this.wrapTab(nativeTab)
+  }
 }
 
 extensions.on('startup', (type, extension) => {

@@ -16,7 +16,7 @@ declare global {
   type XULElement = Element
 
   interface Extension extends ToolkitExtension {
-    tabManager: TabManagerBase
+    tabManager: TabManagerBase & { publicWrapTab(nativeTab: NativeTab): Tab }
     manifest: Omit<browser._manifest.WebExtensionManifest, 'browser_action'> &
       browser_action__manifest.WebExtensionManifest__extended
   }
@@ -174,7 +174,7 @@ declare global {
     extension: Extension
     destroy(): void
     onManifestEntry(entry: any): void
-    getAPI(context: any): void
+    getAPI(context: BaseContext): unknown
   }
   /**
    * Subclass to add APIs commonly used with persistent events.
@@ -250,7 +250,7 @@ declare global {
     _lastError: any
     contextId: any
     unloaded: boolean
-    extension: any
+    extension: Extension
     manifestVersion: any
     jsonSandbox: any
     active: boolean
@@ -1214,12 +1214,11 @@ declare global {
      *
      * @param queryInfo An object containing properties on which to filter.
      * @param context The extension context for which the matching is being performed.
-     * @returns Iterator<TabBase>
      */
     query(
       queryInfo?: object | null,
       context?: BaseContext | null,
-    ): Iterator<TabBase>
+    ): Iterable<TabBase>
 
     /**
      * Returns a TabBase wrapper for the tab with the given ID.
@@ -1390,7 +1389,7 @@ declare global {
      * @readonly
      * @abstract
      */
-    abstract readonly browser: XULElement
+    abstract readonly browser: XULBrowserElement
 
     /**
      * @property browsingContext

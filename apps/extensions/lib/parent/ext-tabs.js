@@ -67,6 +67,7 @@ this.tabs = class extends ExtensionAPIPersistent {
   PERSISTENT_EVENTS = {}
 
   /**
+   * @param {BaseContext} context
    * @returns {tabs__tabs.ApiGetterReturn}
    */
   getAPI(context) {
@@ -76,20 +77,7 @@ this.tabs = class extends ExtensionAPIPersistent {
      * @param {number} tabId
      */
     async function get(tabId) {
-      const window = [...lazy.WindowTracker.registeredWindows.values()].find(
-        (window) =>
-          window.windowTabs().some((tab) => tab.view.browserId === tabId),
-      )
-
-      if (!window) {
-        return Promise.reject({
-          message: `Cannot find tab matching the id ${tabId}`,
-        })
-      }
-
-      const tab = window
-        .windowTabs()
-        .find((tab) => tab.view.browserId === tabId)
+      const tab = extension.tabManager.get(tabId)
 
       if (!tab) {
         return Promise.reject({
@@ -97,119 +85,82 @@ this.tabs = class extends ExtensionAPIPersistent {
         })
       }
 
-      return { tab, window }
+      return tab
+    }
+
+    /**
+     * @param {number} [tabId]
+     */
+    async function getTabOrActive(tabId) {
+      /** @type {TabBase} */
+      let tab
+
+      if (tabId) {
+        tab = extension.tabManager.get(tabId)
+      } else {
+        const nativeTab = lazy.WindowTracker.getActiveWindow()?.activeTab()
+        if (!nativeTab) {
+          return Promise.reject({
+            message: 'Could not find active tab',
+          })
+        }
+        tab = extension.tabManager.publicWrapTab(nativeTab)
+      }
+
+      return tab
     }
 
     return {
       tabs: {
         async get(tabId) {
-          const { tab, window } = await get(tabId)
-          return serialize(extension)([tab, window])
+          const tab = await get(tabId)
+          return tab.convert()
         },
 
         async goBack(tabId) {
-          let tab
-
-          if (tabId) {
-            tab = await get(tabId).then((all) => all.tab)
-          } else {
-            tab = lazy.WindowTracker.getActiveWindow()?.activeTab()
-            if (!tab) {
-              return
-            }
-          }
-          const complete = new Promise((res) => {
-            /** @param {boolean} isLoading  */
-            function complete(isLoading) {
-              if (isLoading) {
-                return
-              }
-              tab.view.events.off('loadingChange', complete)
-              res(undefined)
-            }
-
-            tab.view.events.on('loadingChange', complete)
-          })
-          tab.view.browser.goBack()
-          return complete
+          const tab = await getTabOrActive(tabId)
+          tab.browser.goBack()
         },
 
         async goForward(tabId) {
-          let tab
-
-          if (tabId) {
-            tab = await get(tabId).then((all) => all.tab)
-          } else {
-            tab = lazy.WindowTracker.getActiveWindow()?.activeTab()
-            if (!tab) {
-              return
-            }
-          }
-
-          const complete = new Promise((res) => {
-            /** @param {boolean} isLoading  */
-            function complete(isLoading) {
-              if (isLoading) {
-                return
-              }
-              tab.view.events.off('loadingChange', complete)
-              res(undefined)
-            }
-
-            tab.view.events.on('loadingChange', complete)
-          })
-          tab.view.browser.goForward()
-          return complete
+          const tab = await getTabOrActive(tabId)
+          tab.browser.goForward()
         },
 
         async query(queryInfo) {
-          return query(queryInfo).map(serialize(extension))
+          return Array.from(extension.tabManager.query(queryInfo, context)).map(
+            (tab) => tab.convert(),
+          )
         },
 
-        async remove(tabIds) {
+        async remove(tabSelector) {
+          const tabIds =
+            typeof tabSelector == 'number' ? [tabSelector] : tabSelector
+
           const windows = [...lazy.WindowTracker.registeredWindows.entries()]
-
-          if (typeof tabIds === 'number') {
-            for (const window of windows.map((w) => w[1])) {
-              const tabs = window.windowTabs()
-              for (const tab of tabs) {
-                if (tab.view.browserId === tabIds) {
-                  return window.windowTabs.update((tabs) =>
-                    tabs.filter((tab) => tab.view.browserId !== tabIds),
-                  )
-                }
-              }
-            }
-
-            return
-          }
 
           for (const window of windows.map((w) => w[1])) {
             const tabs = window.windowTabs()
-            for (const tab of tabs) {
-              if (tabIds.includes(tab.view.browserId || -1)) {
-                window.windowTabs.update((tabs) =>
-                  tabs.filter(
-                    (tab) => !tabIds.includes(tab.view.browserId || -1),
-                  ),
-                )
-                break
-              }
+
+            if (tabs.some((tab) => tabIds.includes(tab.view.browserId || -1))) {
+              window.windowTabs.update((tabs) =>
+                tabs.filter(
+                  (tab) => !tabIds.includes(tab.view.browserId || -1),
+                ),
+              )
             }
           }
         },
 
-        async reload(tabIds) {
-          if (typeof tabIds === 'number') {
-            const { tab } = await get(tabIds)
-            tab.view.browser.reload()
-            return
-          }
+        async reload(tabSelector) {
+          const tabIds =
+            typeof tabSelector == 'number' ? [tabSelector] : tabSelector
 
-          for (const id of tabIds) {
-            const { tab } = await get(id)
-            tab.view.browser.reload()
-          }
+          await Promise.all(
+            tabIds
+              .map((id) => get(id))
+              .map((tab) => tab.then((tab) => tab.browser.reload())),
+          )
         },
 
         async update(tabId, updateProperties) {
@@ -223,6 +174,7 @@ this.tabs = class extends ExtensionAPIPersistent {
             }
 
             let errors = null
+            /** @type {import("@browser/tabs").WindowTab | undefined} */
             let retTab
 
             window.windowTabs.update((tabs) =>
@@ -267,7 +219,8 @@ this.tabs = class extends ExtensionAPIPersistent {
             }
 
             if (retTab) {
-              return serialize(extension)([retTab, window])
+              const tab = extension.tabManager.getWrapper(retTab)
+              return tab?.convert()
             }
 
             return
