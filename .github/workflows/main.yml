@@ -109,7 +109,7 @@ jobs:
         run: tar -cvjSf testing-browser.tar.bz2 rt_dist/
 
       - name: Upload artifact
-        uses: actions/upload-artifact
+        uses: actions/upload-artifact@v4
         with:
           name: testing_browser
           path: testing-browser.tar.bz2
